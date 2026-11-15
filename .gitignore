@@ -1,0 +1,13 @@
+# Wird bei jedem Build neu erzeugt (npm run build) und von Hand zu Cloudflare hochgeladen
+dist
+node_modules
+
+# Lokale Einstellungen und Geheimnisse gehören nie ins Repo
+.env
+.env.*
+*.local
+
+# Sonstiges
+*.log
+.DS_Store
+Thumbs.db
