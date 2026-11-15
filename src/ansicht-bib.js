@@ -75,7 +75,8 @@ function klassenBereich(hooks) {
         weg)
     }),
     kl.length ? h('button', { class: 'lnk', onclick: async e => { e.target.textContent = 'Wird aktualisiert …'; const r = await alleAbgleichen({ sofort: true }); ui.meldung = r ? (r.neu || r.geaendert || r.entfernt ? r.neu + ' neu, ' + r.geaendert + ' geändert, ' + r.entfernt + ' entfernt.' : 'Alles aktuell.') : ''; RE() } }, '↻ Jetzt aktualisieren') : null,
-    h('button', { class: 'lnk', style: 'font-size:13px', onclick: () => H.lehrer() }, getLehrercode() ? 'Zum Lehrermodus →' : 'Für Lehrpersonen: Lehrermodus →'))
+    // Für Schüler kein Hinweis auf den Lehrermodus: Lehrpersonen kommen über die eigene Adresse …/lehrer.
+    getLehrercode() ? h('button', { class: 'lnk', style: 'font-size:13px', onclick: () => H.lehrer() }, 'Zum Lehrermodus →') : null)
   return box
 }
 export function sicherungLaden() {
@@ -152,10 +153,10 @@ export function renderBibliothek(root, hooks) {
       ui.meldung = pause ? '«' + x.titel + '» ist wieder auf dem Start.' : '«' + x.titel + '» ist vom Start genommen. Es bleibt hier in der Bibliothek.'
       hooks.neu()
     } }, pause ? 'Wieder auf den Start' : 'Vom Start nehmen (fertig geübt)'))
-    const mehr = h('button', { class: 'bib-mehr', 'aria-label': 'Mehr', onclick: () => { akt.hidden = !akt.hidden; mehr.classList.toggle('on', !akt.hidden) } }, '⋯')
+    const mehr = h('button', { class: 'bib-mehr', 'aria-label': 'Aktionen für «' + x.titel + '»', title: 'Aktionen', 'aria-expanded': 'false', onclick: () => { akt.hidden = !akt.hidden; mehr.classList.toggle('on', !akt.hidden); mehr.setAttribute('aria-expanded', String(!akt.hidden)) } }, '⋯')
     return h('div', { class: 'bib-row' + (pause ? ' pausiert' : '') },
       h('div', { class: 'bib-zeile' },
-        h('div', { class: 'bib-main', onclick: () => x.kind === 'lib' ? hooks.oeffneLib(x.id) : hooks.oeffneLink(x.id) },
+        h('div', { class: 'bib-main', role: 'button', tabindex: '0', onclick:() => x.kind === 'lib' ? hooks.oeffneLib(x.id) : hooks.oeffneLink(x.id) },
           h('div', { class: 'bib-t' }, x.s?.neu ? h('span', { class: 'neu-chip' }, 'NEU') : null, x.titel),
           h('div', { class: 'bib-meta' }, h('span', { class: 'tab ' + TYP_INFO[x.typ].css }, TYP_INFO[x.typ].tab), (x.s?.quelle && x.fach ? x.fach + ' · ' : '') + x.n + ' ' + x.einheit + (x.created && !x.s?.quelle ? ' · ' + datum(x.created) : '') + (x.s?.lp && lpAn ? (ungespeichert(x.s) ? ' · Änderung noch nicht bei der Klasse' : ' · veröffentlicht') : '') + (pause ? ' · nicht auf dem Start' : ''))),
         mehr),

@@ -240,8 +240,18 @@ function alleDecks() {
 
 // ── Start & Adresse ──────────────────────────────────────────────────────────
 
+// Lehrpersonen bekommen eine eigene Adresse (…/lehrer). In der Schüleransicht steht nichts davon.
+// Nach der Anmeldung erscheint auf diesem Gerät der Reiter «Klassen», die Adresse braucht es dann nicht mehr.
+const LEHRER_PFAD = /\/lehrer\/?$/i
+function lehrerAdresse() {
+  if (!LEHRER_PFAD.test(location.pathname)) return false
+  try { history.replaceState(null, '', import.meta.env.BASE_URL) } catch {}
+  return serverBereit()
+}
+
 async function openFromHash() {
   const hash = location.hash || ''
+  if (!hash.startsWith('#d=') && lehrerAdresse()) { navigate('lehrer'); return }
   if (!hash.startsWith('#d=')) { navigate('home'); return }
 
   const token = hash.slice(3)
@@ -412,10 +422,12 @@ function renderEmptyState() {
     <div class="empty-state">
       <img class="empty-hirn" src="${import.meta.env.BASE_URL}hirn.png" alt="" width="120" height="120" />
       <h2>Noch kein Set</h2>
-      <p>Erstelle ein Set aus Foto, Text oder Thema${serverBereit() ? ', oder gib den Klassencode deiner Lehrperson ein' : ''}.
+      ${serverBereit() ? `<p>Hast du von deiner Lehrperson einen Klassencode bekommen? Dann tippe ihn ein, und ihre Sets erscheinen hier.
+         Du kannst auch selbst ein Set erstellen.</p>
+      <button class="btn btn-primary" data-action="klassencode">Klassencode eingeben</button>
+      <button class="btn btn-ghost" data-action="nav" data-ziel="erstellen">Eigenes Set erstellen</button>` : `<p>Erstelle ein Set aus einem Thema oder aus deinem Material.
          Was du einmal geöffnet hast, findest du hier wieder, auch ohne Internet.</p>
-      <button class="btn btn-primary" data-action="nav" data-ziel="erstellen">Set erstellen</button>
-      ${serverBereit() ? '<button class="btn btn-ghost" data-action="klassencode">Klassencode eingeben</button>' : ''}
+      <button class="btn btn-primary" data-action="nav" data-ziel="erstellen">Eigenes Set erstellen</button>`}
       <button class="btn btn-ghost" data-action="beispiel">Beispiel ausprobieren</button>
     </div>
   `
@@ -434,7 +446,7 @@ function renderSetRow({ deck, typ }, pruefung) {
   typ = typ === 'karten' ? 'karten' : 'test'
 
   return `
-    <div class="set-row zeile-${typ}" data-action="${lib ? 'open-lib' : 'open-set'}" data-set-name="${escAttr(deck.name)}" data-lib-id="${escAttr(deck.libId || '')}">
+    <div class="set-row zeile-${typ}" role="button" tabindex="0" aria-label="${escAttr(deck.name)} öffnen" data-action="${lib ? 'open-lib' : 'open-set'}" data-set-name="${escAttr(deck.name)}" data-lib-id="${escAttr(deck.libId || '')}">
       <div class="set-row-main">
         <div class="set-row-name"><span class="typ-tab typ-${typ}">${TYP_TAB[typ] || ''}</span> ${deck.set?.neu ? '<span class="neu-chip">NEU</span>' : ''}${escHtml(deck.name)}</div>
         <div class="set-row-meta">
@@ -449,7 +461,7 @@ function renderSetRow({ deck, typ }, pruefung) {
         : stats.dueCount > 0
         ? `<span class="due-badge">${stats.dueCount} fällig</span>`
         : fertig
-          ? `<span class="uptodate-badge" title="Alles in Fach 5">durchgefüttert 🎉</span>`
+          ? `<span class="uptodate-badge" title="Alles in Stufe 5">durchgefüttert 🎉</span>`
           : `<span class="uptodate-badge">Erledigt ✓</span>`}
       ${lib ? '' : `<button class="btn btn-ghost btn-delete" data-action="forget-set" data-set-name="${escAttr(deck.name)}"
         title="Aus der Liste nehmen">✕</button>`}
@@ -490,7 +502,7 @@ function renderSet() {
           <button class="bl-seg" data-action="satz" data-modus="blatt">Blatt</button></div></div>`}
 
         <div class="set-karte">
-          ${fertig ? `<div class="fertig-banner">🎉 Durchgefüttert: alles sitzt im letzten Fach.</div>` : ''}
+          ${fertig ? `<div class="fertig-banner">🎉 Durchgefüttert: alles sitzt in der letzten Stufe.</div>` : ''}
           <div class="set-stand">
             <span class="set-pct" style="color:${farbe}">${sicher}%</span>
             <span class="set-stand-text"><b>sitzt</b><br>${sitzt} von ${total} ${einheit}</span>
@@ -526,7 +538,7 @@ function renderSet() {
           </label>` : ''}
           <button class="btn btn-ghost btn-reset" data-action="reset">↺ Fortschritt zurücksetzen</button>
         </details>
-        <button class="pause-knopf" data-action="hilfe">Was bedeuten «Fach», «fällig» und «sitzt»?</button>
+        <button class="pause-knopf" data-action="hilfe">Was bedeuten «Stufe», «fällig» und «sitzt»?</button>
       </main>
     </div>
   `
@@ -538,7 +550,7 @@ function renderBoxBar(boxCounts, total) {
   const segs = [1, 2, 3, 4, 5].map(box => {
     const pct = ((boxCounts[box] || 0) / total * 100).toFixed(1)
     if (Number(pct) === 0) return ''
-    return `<div class="box-bar-seg" style="width:${pct}%;background:${colors[box]}" title="Fach ${box}: ${boxCounts[box] || 0}"></div>`
+    return `<div class="box-bar-seg" style="width:${pct}%;background:${colors[box]}" title="Stufe ${box}: ${boxCounts[box] || 0}"></div>`
   }).join('')
   return `<div class="box-bar">${segs || '<div class="box-bar-seg" style="width:100%;background:#e2d8cf"></div>'}</div>`
 }
@@ -572,7 +584,7 @@ function renderStudy() {
           ${[1, 2, 3, 4, 5].map(b =>
             `<div class="box-dot ${b === cardState.box ? 'active' : b < cardState.box ? 'done' : ''}"></div>`
           ).join('')}
-          <span class="box-label">Fach ${cardState.box}</span>
+          <span class="box-label">Stufe ${cardState.box}</span>
         </div>
 
         ${settings.tippen ? tippAnsicht(card) : `
@@ -630,7 +642,7 @@ function renderStudyAufgabe(raw) {
     h('main', { class: 'study-main' },
       h('div', { class: 'box-indicator' },
         ...[1, 2, 3, 4, 5].map(b => h('div', { class: 'box-dot ' + (b === cardState.box ? 'active' : b < cardState.box ? 'done' : '') })),
-        h('span', { class: 'box-label' }, 'Fach ' + cardState.box)),
+        h('span', { class: 'box-label' }, 'Stufe ' + cardState.box)),
       h('div', { class: 'nv nv-in' }, box, fb))))
   renderAufgabe(raw, box, res => {
     const ok = res.r === 'richtig', nea = res.r === 'beinahe'
@@ -822,9 +834,9 @@ function beispielSet() {
 function confirmReset() {
   const deck = state.deck
   if (!deck) return
-  if (confirm(`Fortschritt von «${deck.name}» zurücksetzen? Alle Karten kommen wieder in Fach 1.`)) {
+  if (confirm(`Fortschritt von «${deck.name}» zurücksetzen? Alle Karten kommen wieder in Stufe 1.`)) {
     resetProgress(deck.name)
-    showToast('Fortschritt zurückgesetzt — alle Karten in Fach 1', 'info')
+    showToast('Fortschritt zurückgesetzt — alle Karten in Stufe 1', 'info')
     render()
   }
 }
@@ -871,7 +883,7 @@ function renderSummary() {
           : ''}
         <div class="summary-mastered" ${deck.virtuell ? 'hidden' : ''}>${masteredPct > 0
           ? `${masteredPct}% des Sets sitzt sicher`
-          : 'Noch nichts in Fach 4 — das kommt, wenn die Karten wieder dran sind.'}</div>
+          : 'Noch nichts in Stufe 4 — das kommt, wenn die Karten wieder dran sind.'}</div>
         <div class="summary-actions">
           ${state.sessionFehler.length ? `<button class="btn btn-study-all" data-action="fehler-erklaeren">Alle Fehler erklären lassen (Auftrag kopieren)</button>` : ''}
           ${deck.virtuell ? `${fehlerKarten().length ? '<button class="btn btn-study" data-action="fehler">Fehler nochmals üben</button>' : ''}<button class="btn btn-primary" data-action="home">Zur Übersicht</button>` : `
@@ -1150,10 +1162,10 @@ function showHilfe() {
     <div class="guide-card hilfe-card" role="dialog" aria-modal="true" aria-labelledby="hilfe-titel">
       <h2 class="guide-titel" id="hilfe-titel">So funktioniert Hirnfutter</h2>
       <ul class="hilfe-liste">
-        ${punkt('Die fünf Fächer', 'Jede Karte und jede Aufgabe liegt in einem Fach. Neu beginnt alles in Fach 1. Weisst du die Antwort, wandert sie ein Fach weiter. Weisst du sie nicht, geht sie zurück in Fach 1.')}
-        ${punkt('Fällig', 'Je höher das Fach, desto länger die Pause bis zum nächsten Mal. «Fällig» heisst: Heute ist diese Karte wieder dran. Ist nichts fällig, hast du für heute alles gemacht.')}
-        ${punkt('Sitzt', 'Eine Karte «sitzt», wenn sie in Fach 4 oder 5 liegt. Du hast sie also mehrmals richtig gewusst, mit Pausen dazwischen. Darum bringt es mehr, jeden Tag kurz zu üben als einmal lang.')}
-        ${punkt('Krümel', 'Krümel bekommst du, wenn eine fällige Karte ein Fach aufsteigt. Im Laden tauschst du sie gegen Sachen für dein Hirn. Wer zusätzlich übt, lernt mehr, bekommt dafür aber keine Krümel.')}
+        ${punkt('Die fünf Stufen', 'Jede Karte und jede Aufgabe liegt auf einer Stufe. Neu beginnt alles auf Stufe 1. Weisst du die Antwort, steigt sie eine Stufe auf. Weisst du sie nicht, geht sie zurück auf Stufe 1.')}
+        ${punkt('Fällig', 'Je höher die Stufe, desto länger die Pause bis zum nächsten Mal. «Fällig» heisst: Heute ist diese Karte wieder dran. Ist nichts fällig, hast du für heute alles gemacht.')}
+        ${punkt('Sitzt', 'Eine Karte «sitzt», wenn sie auf Stufe 4 oder 5 liegt. Du hast sie also mehrmals richtig gewusst, mit Pausen dazwischen. Darum bringt es mehr, jeden Tag kurz zu üben als einmal lang.')}
+        ${punkt('Krümel', 'Krümel bekommst du, wenn eine fällige Karte eine Stufe aufsteigt. Im Laden tauschst du sie gegen Sachen für dein Hirn. Wer zusätzlich übt, lernt mehr, bekommt dafür aber keine Krümel.')}
         ${punkt('Üben und Blatt', 'Bei «Üben» kommt eine Aufgabe nach der anderen. «Blatt» zeigt alle Aufgaben wie eine Prüfung: ausfüllen, auswerten, auf Wunsch drucken.')}
         ${punkt('Prüfung', 'Trag auf der Seite eines Sets das Datum der Prüfung ein. Dann steht das Set auf dem Start zuoberst. Nach der Prüfung nimmst du es vom Start.')}
         ${punkt('Deine Daten', 'Alles liegt nur auf diesem Gerät. In der Bibliothek unter «Daten sichern» lädst du eine Sicherung herunter, zum Beispiel vor einem Handywechsel.')}
@@ -1170,6 +1182,14 @@ function closeIosGuide() {
 }
 
 // ── Klicks ───────────────────────────────────────────────────────────────────
+
+// Zeilen, die wie Knöpfe wirken (role="button"), reagieren auch auf Enter und Leertaste.
+document.addEventListener('keydown', e => {
+  if (e.key !== 'Enter' && e.key !== ' ') return
+  const el = e.target
+  if (el?.getAttribute?.('role') !== 'button' || el.tagName === 'BUTTON') return
+  e.preventDefault(); el.click()
+})
 
 document.addEventListener('click', e => {
   const el = e.target.closest('[data-action]')

@@ -390,3 +390,18 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .grade-buttons.zwei{grid-template-columns:1fr 1fr}
 .nv .bib-weitere{flex-basis:100%}.nv .bib-weitere>summary{cursor:pointer;font-size:13px;font-weight:700;color:var(--text-2);padding:4px 0}
 .nv .lp-wahl3{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}.nv .lp-wahl3 select[hidden]{display:none}
+
+/* Tastaturbedienung: Wer mit Tab durch die Zeilen geht, sieht, wo er ist. */
+.set-row:focus-visible, .bib-main:focus-visible, .bib-mehr:focus-visible {
+  outline: 3px solid var(--accent); outline-offset: 2px; border-radius: var(--radius);
+}
+
+/* Erstellen in Schritten */
+.top .schritt-zahl { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--text-2); }
+.schritt-fertig { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.schritt-haken { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--green-light); color: var(--green); font-weight: 900; font-size: 13px; }
+.schritt-titel { font-size: 13px; font-weight: 800; color: var(--text-2); }
+.schritt-text { font-size: 14px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.entwurf-karte { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 14px; border: 2px dashed var(--accent); border-radius: var(--radius-lg); background: var(--surface); }
+.entwurf-meta { font-size: 13px; font-weight: 600; color: var(--text-2); }
+.entwurf-akt { display: flex; gap: 12px; align-items: center; }

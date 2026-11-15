@@ -17,6 +17,7 @@ Auf dem Server liegt nur Lernmaterial. Es gibt keine Schüler-Logins, keine Sch�
 - Codes sind zufällig, 6 Zeichen, ohne verwechselbare Zeichen (kein 0/O, 1/I/L).
 - Keine Rückmeldung von Schülern an Lehrpersonen. Ob jemand zusätzlich übt, liegt bei den Schülern.
 - Lehrpersonen verwalten ihre Klassen und Sets selbst, inklusive Löschen und Papierkorb.
+- **Eigene Adresse für Lehrpersonen:** Lehrpersonen öffnen https://hirnfutter.pages.dev/lehrer und melden sich dort an. Die Schüleransicht zeigt keinen Hinweis auf den Lehrermodus. Nach der Anmeldung erscheint auf dem Gerät der Reiter «Klassen», auch wenn man die App über die normale Adresse öffnet. Es ist dieselbe App: Sets, die eine Lehrperson erstellt, liegen in derselben Bibliothek.
 - Die Verwaltung (Lehrercodes ausstellen und sperren) gehört dem Betreiber. Der Verwaltungsschlüssel gilt gleichzeitig als dessen Lehrercode und öffnet im Lehrermodus zusätzlich den Bereich «Verwaltung».
 
 ## Teile und Stand
@@ -84,7 +85,7 @@ Du brauchst dafür etwa eine Stunde. Die Bezeichnungen im Dashboard können leic
 6. **Deinen Namen festlegen.** Am gleichen Ort eine Variable vom Typ «Text» mit Name `ADMIN_NAME` und deinem Namen, so wie ihn die Schüler sehen sollen, etwa `M. Muster`.
 7. **Testen.** Die Adresse des Workers steht oben, etwa `https://hirnfutter-server.DEINNAME.workers.dev`. Öffne sie im Browser. Es muss erscheinen: `{"app":"hirnfutter-server","ok":true}`
 8. **Adresse in Hirnfutter eintragen.** In `src/server-adresse.js` die Adresse zwischen die Anführungszeichen schreiben. Dann `npm run build` und den Ordner `dist` wie gewohnt hochladen.
-9. **Anmelden.** In Hirnfutter unter Bibliothek ganz unten «Für Lehrpersonen: Lehrermodus» öffnen und deinen Verwaltungsschlüssel als Lehrercode eingeben.
+9. **Anmelden.** Die Lehrer-Adresse https://hirnfutter.pages.dev/lehrer öffnen und deinen Verwaltungsschlüssel als Lehrercode eingeben.
 
 ## Grenzen der Gratisstufe
 

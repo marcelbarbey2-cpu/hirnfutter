@@ -162,8 +162,8 @@ export function renderLehrer(root, hooks) {
         const st = setNach.get(e.id)
         return h('div', { class: 'lp-set' + (e.sichtbar ? '' : ' aus') },
           h('div', { class: 'lp-set-t' }, st.titel, h('span', { class: 'lp-meta' }, [st.fach, st.thema].filter(Boolean).map(x => x + ' · ').join('') + anz(st.n, st.typ) + (e.sichtbar ? '' : ' · ausgeblendet'))),
-          h('button', { class: 'lnk', onclick: () => tu(() => klasseAendern(k.code, { sets: eigeneEintraege().map(x => x.id === e.id ? { ...x, sichtbar: !e.sichtbar } : x) })) }, e.sichtbar ? 'Ausblenden' : 'Einblenden'),
-          h('button', { class: 'lnk', onclick: () => tu(() => klasseAendern(k.code, { sets: eigeneEintraege().filter(x => x.id !== e.id) }), '«' + st.titel + '» aus der Klasse genommen.') }, 'Aus Klasse nehmen'))
+          h('button', { class: 'lnk', onclick: () => tu(() => klasseAendern(k.code, { sets: eigeneEintraege().map(x => x.id === e.id ? { ...x, sichtbar: !e.sichtbar } : x) })) }, e.sichtbar ? 'Für Schüler ausblenden' : 'Für Schüler wieder zeigen'),
+          h('button', { class: 'lnk', onclick: () => tu(() => klasseAendern(k.code, { sets: eigeneEintraege().filter(x => x.id !== e.id) }), '«' + st.titel + '» aus der Klasse genommen.') }, 'Freigabe für diese Klasse entfernen'))
       }) : h('div', { class: 'lp-hinweis' }, 'Von dir noch keine Sets. Veröffentliche unten ein Set in diese Klasse.'),
       andere.length ? h('div', { class: 'lbl', style: 'margin-top:8px' }, 'Von anderen Lehrpersonen') : null,
       ...andere.map(e => h('div', { class: 'lp-set fremd' + (e.sichtbar ? '' : ' aus') },
