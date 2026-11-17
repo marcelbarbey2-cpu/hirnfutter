@@ -9,6 +9,7 @@ import {
   serverPasst, anzeigeName,
   verwLehrer, verwLehrerNeu, verwSperren, verwNeuerCode, verwLoeschen, verwUebergeben, klasseBeitretenLp, klasseVerlassenLp,
 } from './klassen.js'
+import { symEl } from './symbole.js'
 
 // ── Dialog für Schüler ───────────────────────────────────────────────────────
 
@@ -43,6 +44,28 @@ export function klassencodeDialog(fertig) {
 
 // ── Lehrermodus ──────────────────────────────────────────────────────────────
 
+/** «So geht der Lehrermodus»: vier Schritte, mit Knöpfen dorthin, wo man sie erledigt. */
+function anleitung(hooks, offen) {
+  const schritt = (nr, titel, text, knopf) => h('div', { class: 'lp-schritt' },
+    h('span', { class: 'lp-schritt-nr', 'aria-hidden': 'true' }, String(nr)),
+    h('div', null, h('div', { class: 'lp-schritt-t' }, titel), h('div', { class: 'lp-hinweis' }, text), knopf || null))
+  const angemeldet = !!getLehrercode()
+  const zu = id => () => document.getElementById(id)?.scrollIntoView({ block: 'start', behavior: 'smooth' })
+  return h('details', { class: 'lp-det lp-anleitung', open: offen },
+    h('summary', null, 'So geht der Lehrermodus'),
+    h('div', { class: 'lp-schritte' },
+      schritt(1, 'Set erstellen', 'Du erstellst Sets genau wie die Schüler: unter «Erstellen». Fertige Sets liegen in deiner Bibliothek. Dort kannst du sie bearbeiten und in Themenordner legen.',
+        angemeldet ? h('button', { class: 'lnk', onclick: () => hooks.erstellen() }, symEl('erstellen'), 'Zu «Erstellen» →') : null),
+      schritt(2, 'Klasse anlegen', 'Einmal pro Klasse. Unterrichtest du in einer Klasse, die schon einen Code hat, trittst du ihr mit diesem Code bei. Die Schüler brauchen so nur einen Code.',
+        angemeldet ? h('button', { class: 'lnk', onclick: zu('lp-klassen') }, 'Zu den Klassen ↓') : null),
+      schritt(3, 'Set in die Klasse legen', 'Unter «Sets veröffentlichen» wählst du bei einem Set die Klasse. Oder in der Bibliothek bei einem Set: «⋯» → «In Klasse veröffentlichen».',
+        angemeldet ? h('button', { class: 'lnk', onclick: zu('lp-pub') }, 'Zu «Sets veröffentlichen» ↓') : null),
+      schritt(4, 'Klassencode den Schülern geben', 'Die Schüler tippen den Code einmal in Hirnfutter ein. Danach kommen neue Sets von selbst dazu.'),
+      h('div', { class: 'lp-hinweis', style: 'margin-top:4px' },
+        h('b', null, 'Später: '), 'Ändern: In der Bibliothek bearbeiten, dann «Änderung an die Klasse schicken». Nach der Prüfung: In der Klasse «Für Schüler ausblenden». ',
+        'Der Server kennt keine Schülernamen und keine Ergebnisse: Fortschritt und Noten bleiben auf den Geräten der Schüler.')))
+}
+
 const L = { daten: null, laedt: false, fehler: '', meldung: '', offen: new Set(), verw: null, neuCode: null }
 const anz = (n, typ) => n + (typ === 'karten' ? (n === 1 ? ' Karte' : ' Karten') : (n === 1 ? ' Aufgabe' : ' Aufgaben'))
 const tage = t => Math.max(0, Math.ceil((t + (L.daten?.papierkorbTage || 30) * 86400000 - Date.now()) / 86400000))
@@ -50,7 +73,9 @@ const tage = t => Math.max(0, Math.ceil((t + (L.daten?.papierkorbTage || 30) * 8
 export function renderLehrer(root, hooks) {
   const zeichne = () => renderLehrer(root, hooks)
   const seite = h('div', { class: 'seite', style: 'padding-bottom:24px' })
-  root.replaceChildren(h('div', { class: 'screen nv' }, hooks.kopf('Lehrermodus'), seite, hooks.nav()))
+  // Vor der Anmeldung keine Reiter: Die Seite fragt nur nach dem Lehrercode, wie der Schüler-Start nach dem Klassencode.
+  const angemeldet = !!getLehrercode()
+  root.replaceChildren(h('div', { class: 'screen nv' }, hooks.kopf('Lehrermodus'), seite, ...(angemeldet ? [hooks.nav()] : [])))
 
   if (!serverBereit()) {
     seite.append(h('div', { class: 'fb near' }, h('span', null, '!'), h('div', null, 'Der Klassen-Server ist noch nicht eingerichtet. Trag seine Adresse in src/server-adresse.js ein.')))
@@ -67,19 +92,27 @@ export function renderLehrer(root, hooks) {
 
   // Anmelden
   if (!getLehrercode()) {
-    const inp = h('input', { class: 'in', placeholder: 'Lehrercode', autocomplete: 'off', spellcheck: 'false', autocapitalize: 'characters' })
+    const inp = h('input', { class: 'in lp-login-in', placeholder: 'Lehrercode', 'aria-label': 'Lehrercode', autocomplete: 'off', spellcheck: 'false', autocapitalize: 'characters' })
     const fb = h('div')
+    const knopf = h('button', { class: 'btn', onclick: () => los() }, symEl('anmelden'), 'Anmelden')
     const los = async () => {
-      try { await lehrerAnmelden(inp.value); await laden(); L.meldung = ''; zeichne() }
-      catch (e) { fb.replaceChildren(h('div', { class: 'fb no' }, h('span', null, '✕'), h('div', null, e.status === 401 ? 'Diesen Lehrercode kennt der Server nicht.' : e.message))) }
+      if (!inp.value.trim()) return inp.focus()
+      knopf.disabled = true; knopf.textContent = 'Wird geprüft …'
+      try { await lehrerAnmelden(inp.value); await laden(); L.meldung = ''; L.anleitung = true; hooks.angemeldet() }
+      catch (e) { knopf.disabled = false; knopf.textContent = 'Anmelden'; fb.replaceChildren(h('div', { class: 'fb no' }, h('span', null, '✕'), h('div', null, e.status === 401 ? 'Diesen Lehrercode kennt der Server nicht.' : e.message))) }
     }
     inp.addEventListener('keydown', e => { if (e.key === 'Enter') los() })
+    seite.classList.add('lp-login')
     seite.append(
-      h('h2', null, 'Für Lehrpersonen'),
-      h('div', { style: 'font-size:15px;font-weight:600;color:var(--text-2);line-height:1.45' },
-        'Mit deinem Lehrercode legst du Klassen an und veröffentlichst Sets. Deine Schüler tippen einmal den Klassencode ein und haben danach alle Sets, die du in die Klasse legst.'),
-      inp, fb, h('button', { class: 'btn', onclick: los }, 'Anmelden'),
-      h('div', { style: 'font-size:13px;font-weight:600;color:var(--text-2)' }, 'Den Lehrercode erhältst du von der Verwaltung. An einem geteilten Computer meldest du dich danach wieder ab.'))
+      h('div', { class: 'lp-login-karte' },
+        h('img', { class: 'lp-login-hirn', src: import.meta.env.BASE_URL + 'hirn.png', alt: '', width: 96, height: 96 }),
+        h('div', { class: 'lp-login-titel' }, 'Für Lehrpersonen'),
+        h('p', { class: 'lp-login-text' }, 'Melde dich mit deinem Lehrercode an. Danach legst du Klassen an und gibst deine Sets für sie frei. Die Schüler tippen einmal den Klassencode ein und haben danach alle Sets.'),
+        inp, fb, knopf,
+        h('div', { class: 'lp-login-klein' }, 'Den Lehrercode erhältst du von der Verwaltung. An einem geteilten Computer meldest du dich danach wieder ab.')),
+      anleitung(hooks, false),
+      h('button', { class: 'lnk lp-login-weg', onclick: () => hooks.heim() }, 'Zur Schüler-App →'))
+    setTimeout(() => inp.focus(), 50)
     return
   }
 
@@ -106,32 +139,40 @@ export function renderLehrer(root, hooks) {
   L.meldung = ''
 
   seite.append(h('div', { class: 'lp-kopf' },
-    h('div', null, h('div', { class: 'lbl' }, 'Angemeldet als'), h('div', { style: 'font-weight:800;font-size:17px' }, D.lehrer.name),
+    h('div', null, h('div', { class: 'lbl' }, 'Angemeldet als'), h('div', { style: 'font-weight:800;font-size:18px' }, D.lehrer.name),
       D.lehrer.admin ? h('div', { class: 'lp-meta' }, 'Verwaltung: Du wirst abgemeldet, sobald du die App schliesst.') : null),
-    h('button', { class: 'lnk', onclick: () => { lehrerAbmelden(); L.daten = null; hooks.weg() } }, 'Abmelden')))
+    h('button', { class: 'lnk', onclick: () => { lehrerAbmelden(); L.daten = null; hooks.weg() } }, symEl('abmelden'), 'Abmelden')))
+  // Die Anleitung ist offen, solange es noch keine Klasse gibt, und gleich nach der Anmeldung.
+  seite.append(anleitung(hooks, L.anleitung || !klassen.length))
+  L.anleitung = false
 
   // Klassen
   // Klassenname: auswählen statt tippen. Das Schuljahr setzt die App, der Name zählt danach jedes Jahr von selbst hoch.
   const schuljahr = (() => { const d = new Date(), y = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1, zz = n => String(n % 100).padStart(2, '0'); return zz(y) + '_' + zz(y + 1) })()
   const wahl = (wert, opts) => h('select', { class: 'in', onchange: () => neuZeigen() }, opts.map(([v, t]) => h('option', { value: v, selected: v === wert }, t)))
-  const neuArt = wahl('E', [['E', 'Sek E'], ['B', 'Sek B'], ['X', 'Kurs oder anderer Name']])
+  const neuArt = wahl('E', [['E', 'Sek E'], ['B', 'Sek B'], ['P', 'Sek P'], ['X', 'Kurs oder anderer Name']])
   const neuStufe = wahl('1', [['1', '1. Sek'], ['2', '2. Sek'], ['3', '3. Sek']])
-  const neuBuch = wahl('a', 'abcdefgh'.split('').map(b => [b, 'Klasse ' + b]))
+  const neuBuch = wahl('a', 'abcdefghpq'.split('').map(b => [b, 'Klasse ' + b])) // Sek P: nur p und q
   const neuName = h('input', { class: 'in', placeholder: 'Name, z. B. Wahlfach Informatik', maxlength: 60, autocomplete: 'off', oninput: () => neuZeigen() })
   const neuVorschau = h('div', { class: 'lp-hinweis' })
   const neuTitel = () => neuArt.value === 'X' ? neuName.value.trim()
-    : schuljahr + '_Sek_' + neuArt.value + '_' + (neuArt.value === 'E' ? ['', 'I', 'II', 'III'][neuStufe.value] + neuBuch.value : neuStufe.value + neuBuch.value.toUpperCase())
+    : schuljahr + '_Sek_' + neuArt.value + '_' + (neuArt.value !== 'B' ? ['', 'I', 'II', 'III'][neuStufe.value] + neuBuch.value : neuStufe.value + neuBuch.value.toUpperCase())
   function neuZeigen() {
     const frei = neuArt.value === 'X'
     neuStufe.hidden = neuBuch.hidden = frei; neuName.hidden = !frei
-    ;[...neuBuch.options].forEach(o => { o.textContent = 'Klasse ' + (neuArt.value === 'B' ? o.value.toUpperCase() : o.value) })
+    const p = neuArt.value === 'P'
+    ;[...neuBuch.options].forEach(o => { o.textContent = 'Klasse ' + (neuArt.value === 'B' ? o.value.toUpperCase() : o.value); o.hidden = o.disabled = p !== 'pq'.includes(o.value) })
+    if (neuBuch.selectedOptions[0]?.disabled) neuBuch.value = p ? 'p' : 'a'
+    // Sek P gibt es nur in der 1. und 2. Sek (danach Gymnasium).
+    const s3 = neuStufe.querySelector('option[value="3"]'); s3.hidden = s3.disabled = p
+    if (p && neuStufe.value === '3') neuStufe.value = '2'
     const t = neuTitel()
     neuVorschau.replaceChildren(frei ? 'Dieser Name bleibt, wie er ist. Er zählt nicht von selbst ins nächste Schuljahr.' : h('span', null, 'Name: ', h('b', null, t), ' · Die Schüler sehen: ', h('b', null, anzeigeName(t))))
   }
   neuZeigen()
-  const neuKnopf = h('button', { class: 'btn ghost', style: 'height:46px', onclick: () => { const n = neuTitel(); if (!n) return neuName.focus(); tu(() => klasseAnlegen(n), 'Klasse «' + n + '» angelegt.') } }, 'Klasse anlegen')
+  const neuKnopf = h('button', { class: 'btn ghost', style: 'height:46px', onclick: () => { const n = neuTitel(); if (!n) return neuName.focus(); tu(() => klasseAnlegen(n), 'Klasse «' + n + '» angelegt.') } }, symEl('plus'), 'Klasse anlegen')
   neuName.addEventListener('keydown', e => { if (e.key === 'Enter') neuKnopf.click() })
-  seite.append(h('h2', null, 'Klassen (' + klassen.length + ')'))
+  seite.append(h('h2', { id: 'lp-klassen' }, 'Klassen (' + klassen.length + ')'))
   if (!klassen.length) seite.append(h('div', { class: 'lp-hinweis' }, 'Leg eine Klasse an oder tritt einer bestehenden bei. Die Schüler brauchen pro Klasse nur einen Code.'))
   for (const k of klassen) seite.append(klasseKarte(k))
   const beiIn = h('input', { class: 'in', placeholder: 'Klassencode, z. B. K7Q 4MP', maxlength: 9, autocapitalize: 'characters', autocomplete: 'off' })
@@ -140,7 +181,7 @@ export function renderLehrer(root, hooks) {
   seite.append(
     h('details', { class: 'lp-det', open: !klassen.length }, h('summary', null, 'Neue Klasse anlegen'),
       h('div', { class: 'lp-neu' }, h('div', { class: 'lp-hinweis' }, 'Für deine eigene Klasse (als Klassenlehrperson) oder für einen Kurs, der quer durch Klassen geht.'),
-        h('div', { class: 'lp-hinweis' }, 'Sek-Klassen zählen jedes Jahr am 1. August von selbst hoch (aus der 1. Sek wird die 2. Sek). Nach der 3. Sek wird die Klasse archiviert.'),
+        h('div', { class: 'lp-hinweis' }, 'Sek-Klassen zählen jedes Jahr am 1. August von selbst hoch (aus der 1. Sek wird die 2. Sek). Nach der 3. Sek wird die Klasse archiviert, bei Sek P schon nach der 2. Sek.'),
         h('div', { class: 'lp-wahl3' }, neuArt, neuStufe, neuBuch), neuName, neuVorschau, neuKnopf)),
     h('details', { class: 'lp-det', open: !klassen.length }, h('summary', null, 'Bestehender Klasse beitreten'),
       h('div', { class: 'lp-neu' }, h('div', { class: 'lp-hinweis' }, 'Du unterrichtest ein Fach in einer Klasse, die schon einen Code hat? Gib ihn ein. Danach legst du deine Sets in dieselbe Klasse, und die Schüler brauchen keinen zweiten Code.'), beiIn, beiKnopf)))
@@ -289,7 +330,7 @@ export function renderLehrer(root, hooks) {
       const cb = h('button', { class: 'btn ghost lp-btn', onclick: () => kopieren(L.neuCode.code, cb) }, 'Code kopieren')
       box.append(h('div', { class: 'lp-neucode' },
         h('div', { class: 'lbl' }, 'Lehrercode für ' + L.neuCode.name),
-        h('div', { class: 'lp-code', style: 'font-size:20px;text-align:center' }, L.neuCode.code),
+        h('div', { class: 'lp-code', style: 'font-size:22px;text-align:center' }, L.neuCode.code),
         h('div', { class: 'lp-hinweis' }, 'Die Lehrperson öffnet Hirnfutter, geht in der Bibliothek ganz unten auf «Für Lehrpersonen: Lehrermodus» und gibt diesen Code ein.'),
         cb))
       L.neuCode = null

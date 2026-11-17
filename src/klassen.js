@@ -10,11 +10,11 @@ const KEY_LP = 'zk:lp'
 const ABSTAND = 10 * 60 * 1000 // höchstens alle 10 Minuten nachschauen
 
 export const serverBereit = () => !!SERVER
-/** Für Schüler: «26_27_Sek_E_Ia» → «Sek E Ia · 2026/27». Andere Namen bleiben, wie sie sind. */
+/** Für Schüler: «26_27_Sek_E_Ia» → «Sek E Ia · 2026/27». Sek E und Sek P: römisch + klein, Sek B: arabisch + gross. Andere Namen bleiben, wie sie sind. */
 export function anzeigeName(name) {
-  const m = /^(\d{2})_(\d{2})_sek_([eb])_(iii|ii|i|[123])([a-z])$/i.exec(String(name || '').trim())
+  const m = /^(\d{2})_(\d{2})_sek_([ebp])_(iii|ii|i|[123])([a-z])$/i.exec(String(name || '').trim())
   if (!m) return name || ''
-  const e = m[3].toUpperCase() === 'E'
+  const e = m[3].toUpperCase() !== 'B'
   return 'Sek ' + m[3].toUpperCase() + ' ' + (e ? m[4].toUpperCase() + m[5].toLowerCase() : m[4] + m[5].toUpperCase()) + ' · 20' + m[1] + '/' + m[2]
 }
 export const normCode = c => String(c || '').toUpperCase().replace(/[^0-9A-Z]/g, '')
@@ -189,7 +189,7 @@ export const ungespeichert = set => !!set.lp && (set.geaendert || 0) > (set.lp.s
 export async function serverPasst() {
   try { const d = (await anfrage('/')).daten; return d?.version === SERVER_VERSION } catch { return null }
 }
-export const appStand = () => SERVER_VERSION.split('-').reverse().map(Number).join('.')
+export const appStand = () => SERVER_VERSION.slice(0, 10).split('-').reverse().map(Number).join('.')
 
 // ── Verwaltung (nur mit dem Verwaltungsschlüssel) ────────────────────────────
 export const verwLehrer = () => lp('/admin/lehrer')

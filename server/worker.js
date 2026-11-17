@@ -14,7 +14,7 @@
 //   lehrerliste    → [lpId]                                 für die Verwaltung
 // Gelöschtes wird mit Ablaufzeit (30 Tage) neu geschrieben: der Papierkorb räumt sich selbst auf.
 
-const VERSION = '2026-11-15' // muss zu SERVER_VERSION in src/server-adresse.js passen
+const VERSION = '2026-11-15c' // muss zu SERVER_VERSION in src/server-adresse.js passen
 const ZEICHEN = '23456789ABCDEFGHJKMNPQRSTUVWXYZ' // ohne 0/O, 1/I/L
 const PAPIERKORB_TAGE = 30
 const MAX_SET_BYTES = 300_000
@@ -148,15 +148,16 @@ function klasseNorm(k) {
 const gerollt = new WeakSet() // Klassen, deren Name sich beim Laden geändert hat: beim Lesen einmal zurückschreiben
 const zurueckschreiben = (env, k) => gerollt.has(k) ? put(env, 'kl:' + k.code, k, k.geloescht ? ablauf : undefined) : null
 
-// ── Schuljahr: Klassennamen wie 26_27_Sek_E_Ia (Sek E: römisch + klein) oder 26_27_Sek_B_1A (Sek B: arabisch + gross) ──
+// ── Schuljahr: Klassennamen wie 26_27_Sek_E_Ia, 26_27_Sek_P_Ip (Sek E und P: römisch + klein) oder 26_27_Sek_B_1A (Sek B: arabisch + gross) ──
 // Ab dem 1. August zählt der Name von selbst hoch (26_27_Sek_E_Ia → 27_28_Sek_E_IIa).
-// Nach der dritten Sek wird die Klasse einmal archiviert (abgeschlossen); von Hand wieder aktivieren bleibt möglich.
-const KLASSEN_RX = /^(\d{2})_(\d{2})_sek_([eb])_(iii|ii|i|[123])([a-z])$/i
+// Nach der letzten Sek wird die Klasse einmal archiviert (abgeschlossen); von Hand wieder aktivieren bleibt möglich.
+// Sek P endet nach der 2. Sek (danach Gymnasium), Sek E und Sek B nach der 3. Sek.
+const KLASSEN_RX = /^(\d{2})_(\d{2})_sek_([ebp])_(iii|ii|i|[123])([a-z])$/i
 const ROEMISCH = ['', 'I', 'II', 'III']
 function schuljahr(d = new Date()) { const y = d.getUTCFullYear(); return (d.getUTCMonth() >= 7 ? y : y - 1) % 100 } // ab August
 function klassenName(jahr, sys, stufe, buchstabe) {
   const zz = n => String(n % 100).padStart(2, '0')
-  return zz(jahr) + '_' + zz(jahr + 1) + '_Sek_' + sys + '_' + (sys === 'E' ? ROEMISCH[stufe] + buchstabe.toLowerCase() : stufe + buchstabe.toUpperCase())
+  return zz(jahr) + '_' + zz(jahr + 1) + '_Sek_' + sys + '_' + (sys !== 'B' ? ROEMISCH[stufe] + buchstabe.toLowerCase() : stufe + buchstabe.toUpperCase())
 }
 function fortschreiben(k, d = new Date()) {
   const m = KLASSEN_RX.exec(String(k.name || '').trim())
@@ -165,7 +166,7 @@ function fortschreiben(k, d = new Date()) {
   if (diff === 0 || diff > 10) return false // gleiches Schuljahr, oder Name liegt in der Zukunft
   const sys = m[3].toUpperCase(), alt = /\d/.test(m[4]) ? +m[4] : ROEMISCH.indexOf(m[4].toUpperCase())
   const stufe = alt + diff
-  if (stufe > 3) { k.abgeschlossen = true; k.archiviert = true; k.geaendert = jetzt(); return true }
+  if (stufe > (sys === 'P' ? 2 : 3)) { k.abgeschlossen = true; k.archiviert = true; k.geaendert = jetzt(); return true }
   k.name = klassenName(start + diff, sys, stufe, m[5]); k.geaendert = jetzt()
   k.jahrNeu = jetzt() // Lehrpersonen sehen damit den Hinweis, die Sets vom letzten Jahr auszublenden
   return true

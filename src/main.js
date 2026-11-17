@@ -40,6 +40,7 @@ import { renderBibliothek, bibZurueck, sicherungLaden } from './ansicht-bib.js'
 import { renderSatz } from './blatt.js'
 import { alleAbgleichen, serverBereit, getLehrercode, anzeigeName } from './klassen.js'
 import { klassencodeDialog, renderLehrer } from './ansicht-klassen.js'
+import { sym } from './symbole.js'
 import { updateLibSet } from './bibliothek.js'
 
 // ── Sets kommen als Link ─────────────────────────────────────────────────────
@@ -170,21 +171,27 @@ function render() {
 
 // ── Neue Bereiche: Navigation und Verbindungen ───────────────────────────────
 
-const NAV = [['home', 'Üben'], ['erstellen', 'Erstellen'], ['bibliothek', 'Bibliothek']]
-const navListe = () => serverBereit() && getLehrercode() ? [...NAV, ['lehrer', 'Klassen']] : NAV
+const NAV = [['home', 'Üben', 'ueben'], ['erstellen', 'Erstellen', 'erstellen'], ['bibliothek', 'Bibliothek', 'bibliothek']]
+const navListe = () => serverBereit() && getLehrercode() ? [...NAV, ['lehrer', 'Klassen', 'klassen']] : NAV
 
 function navHtml(aktiv) {
-  return `<nav class="reiter" aria-label="Bereiche">${navListe().map(([id, name]) =>
-    `<button class="reiter-knopf${id === aktiv ? ' on' : ''}" data-action="nav" data-ziel="${id}">${name}</button>`).join('')}</nav>`
+  return `<nav class="reiter" aria-label="Bereiche">${navListe().map(([id, name, icon]) =>
+    `<button class="reiter-knopf${id === aktiv ? ' on' : ''}" data-action="nav" data-ziel="${id}"${id === aktiv ? ' aria-current="page"' : ''}>${sym(icon)}<span>${name}</span></button>`).join('')}</nav>`
 }
 function navEl(aktiv) {
   const t = document.createElement('template')
   t.innerHTML = navHtml(aktiv)
   return t.content.firstElementChild
 }
+/** Shop-Knopf rechts in der Kopfzeile. Den Krümelstand zeigt die Hirn-Leiste auf dem Start. */
+function shopKnopfHtml() {
+  return `<button class="kopf-shop" data-action="laden">${sym('laden')}<span>Shop</span></button>`
+}
 function kopfEl(titel) {
-  return h('header', { class: 'app-header' },
+  const kopf = h('header', { class: 'app-header' },
     h('div', { class: 'logo' }, h('img', { class: 'logo-hirn', src: `${import.meta.env.BASE_URL}hirn.png`, alt: '', width: 30, height: 30 }), h('span', { class: 'logo-text' }, titel)))
+  if (titel !== 'Lehrermodus') kopf.insertAdjacentHTML('beforeend', shopKnopfHtml()) // im Lehrermodus bleibt die Kopfzeile ruhig
+  return kopf
 }
 function geheZu(ziel) {
   if (location.hash) history.replaceState(null, '', location.pathname + location.search)
@@ -223,6 +230,9 @@ const hooksLehrer = {
   kopf: kopfEl,
   nav: () => navEl('lehrer'),
   weg: () => navigate('bibliothek'),
+  heim: () => navigate('home'),
+  angemeldet: () => navigate('lehrer'), // nach der Anmeldung ausdrücklich im Lehrermodus bleiben
+  erstellen: () => { zuruecksetzen(); navigate('erstellen', { erstTyp: null }) },
 }
 const hooksBlatt = {
   folge: (prompt, set) => { folgeVorbereiten(prompt, set); navigate('erstellen', { erstTyp: 'test' }) },
@@ -300,9 +310,11 @@ function futterLeiste() {
 
   return `
     <div class="futter">
-      <button class="futter-avatar" data-action="laden" title="Zum Laden">
-        ${avatarHtml(getLook())}
-      </button>
+      <div class="futter-links">
+        <button class="futter-avatar" data-action="laden" title="Zum Shop" aria-label="Dein Hirn: zum Shop">
+          ${avatarHtml(getLook())}
+        </button>
+      </div>
       <div class="futter-text">
         <div class="futter-kopf">
           <span class="futter-stufe">${stufe.name}</span>
@@ -318,7 +330,6 @@ function futterLeiste() {
           ${naechste
             ? `noch ${(naechste.ab - total).toLocaleString('de-CH')} bis «${naechste.name}»`
             : 'höchste Stufe erreicht'}
-          <button class="futter-laden" data-action="laden">Laden öffnen</button>
         </div>
       </div>
     </div>
@@ -337,9 +348,10 @@ function sitztAnteil(deck, progress) {
   if (!total) return { anteil: 0, sitzt: 0, total: 0, farbe: 'var(--text-3)' }
   const sitzt  = sitztCount(deck, progress)
   const anteil = Math.round(sitzt / total * 100)
-  const farbe  = anteil >= 66 ? 'oklch(0.55 0.13 145)'
-    : anteil >= 33 ? 'oklch(0.68 0.14 65)'
-    : 'oklch(0.55 0.14 25)'
+  // Ermutigen statt bewerten: Was noch nicht sitzt, ist neutral oder unterwegs, nie rot.
+  const farbe  = anteil >= 66 ? 'var(--green)'
+    : anteil > 0 ? 'var(--accent-hover)'
+    : 'var(--text-3)'
   return { anteil, sitzt, total, farbe }
 }
 
@@ -385,12 +397,13 @@ function renderHome() {
     <div class="screen home-screen">
       <header class="app-header">
         <div class="logo"><img class="logo-hirn" src="${import.meta.env.BASE_URL}hirn.png" alt="" width="30" height="30" /><span class="logo-text">Hirnfutter</span></div>
+        ${shopKnopfHtml()}
       </header>
 
       ${installBanner()}
       ${alle.length && sicherungFaellig() ? `<div class="install-hint">
         <div class="install-hint-text">Deine Sets, dein Fortschritt und deine Krümel liegen nur auf diesem Gerät. Sichere sie als Datei, dann geht nichts verloren.</div>
-        <div class="install-hint-actions"><button class="btn btn-primary btn-sm" data-action="sichern">Jetzt sichern</button>
+        <div class="install-hint-actions"><button class="btn btn-primary btn-sm" data-action="sichern">${sym('sichern')}Jetzt sichern</button>
         <button class="btn btn-ghost btn-sm" data-action="sichern-spaeter">Später</button></div></div>` : ''}
 
       <main class="home-main">
@@ -398,7 +411,7 @@ function renderHome() {
         ${alle.length === 0 ? renderEmptyState() : !eintraege.length ? `
           <div class="alles-gut">Alle deine Sets sind vom Start genommen.</div>
           <button class="sammlung-link" style="background:none;border:0;width:100%" data-action="nav" data-ziel="bibliothek">Zur Bibliothek: dort kannst du sie wieder aufnehmen →</button>
-          ${serverBereit() ? '<button class="sammlung-link" style="background:none;border:0;width:100%" data-action="klassencode">Klassencode eingeben →</button>' : ''}` : `
+          ${lpLink()}` : `
           ${vorbei.map(e => `<div class="pruef-vorbei"><span>Die Prüfung zu <b>«${escHtml(e.deck.name)}»</b> ist vorbei. Brauchst du das Set noch auf dem Start?</span>
             <div class="pruef-vorbei-akt"><button class="btn btn-primary btn-sm" data-action="pruef-fertig" data-set-name="${escAttr(e.deck.name)}">Vom Start nehmen</button>
             <button class="btn btn-ghost btn-sm" data-action="pruef-behalten" data-set-name="${escAttr(e.deck.name)}">Behalten</button></div></div>`).join('')}
@@ -407,9 +420,9 @@ function renderHome() {
           ${dran.length ? `<h2 class="abschnitt">Heute dran</h2><div class="set-list">${dran.map(e => renderSetRow(e)).join('')}</div>` : bald.length ? '' : `<div class="alles-gut">✓ Für heute ist alles gefüttert.</div>`}
           ${rest.length ? `<h2 class="abschnitt">${dran.length ? 'Weitere Sets' : 'Deine Sets'}</h2><div class="set-list">${rest.map(e => renderSetRow(e)).join('')}</div>` : ''}
           ${eintraege.length > zeigen.length || nPause ? `<button class="sammlung-link" style="background:none;border:0;width:100%" data-action="nav" data-ziel="bibliothek">Alle ${alle.length} Sets in der Bibliothek${nPause ? ` (${nPause} vom Start genommen)` : ''} →</button>` : ''}
-          ${serverBereit() ? '<button class="sammlung-link" style="background:none;border:0;width:100%" data-action="klassencode">Klassencode eingeben →</button>' : ''}
+          ${lpLink()}
         `}
-        <button class="sammlung-link" style="background:none;border:0;width:100%" data-action="hilfe">So funktioniert Hirnfutter →</button>
+        <button class="sammlung-link" style="background:none;border:0;width:100%" data-action="hilfe">${sym('hilfe')}So funktioniert Hirnfutter →</button>
       </main>
 
       ${navHtml('home')}
@@ -417,18 +430,38 @@ function renderHome() {
   `
 }
 
+/** Angemeldete Lehrperson: Sie braucht keinen Klassencode, sondern den Weg zu ihren Klassen. */
+const istLehrperson = () => serverBereit() && !!getLehrercode()
+function lpLink() {
+  if (!serverBereit()) return ''
+  return istLehrperson()
+    ? '<button class="sammlung-link" style="background:none;border:0;width:100%" data-action="nav" data-ziel="lehrer">' + sym('klassen') + 'Zum Lehrermodus: Klassen und Veröffentlichen →</button>'
+    : '<button class="sammlung-link" style="background:none;border:0;width:100%" data-action="klassencode">' + sym('code') + 'Klassencode eingeben →</button>'
+}
+
 function renderEmptyState() {
+  if (istLehrperson()) return `
+    <div class="empty-state">
+      <img class="empty-hirn" src="${import.meta.env.BASE_URL}hirn.png" alt="" width="120" height="120" />
+      <h2>Noch kein Set</h2>
+      <p>Erstelle dein erstes Set. Im Lehrermodus legst du es danach in eine Klasse.
+         Hier unter «Üben» kannst du deine Sets auch selbst ausprobieren, so wie deine Schüler sie sehen.</p>
+      <button class="btn btn-primary" data-action="nav" data-ziel="erstellen">${sym('erstellen')}Set erstellen</button>
+      <button class="btn btn-ghost" data-action="nav" data-ziel="lehrer">${sym('klassen')}Zum Lehrermodus</button>
+      <button class="btn btn-ghost" data-action="beispiel">${sym('beispiel')}Beispiel ausprobieren</button>
+    </div>
+  `
   return `
     <div class="empty-state">
       <img class="empty-hirn" src="${import.meta.env.BASE_URL}hirn.png" alt="" width="120" height="120" />
       <h2>Noch kein Set</h2>
       ${serverBereit() ? `<p>Hast du von deiner Lehrperson einen Klassencode bekommen? Dann tippe ihn ein, und ihre Sets erscheinen hier.
          Du kannst auch selbst ein Set erstellen.</p>
-      <button class="btn btn-primary" data-action="klassencode">Klassencode eingeben</button>
-      <button class="btn btn-ghost" data-action="nav" data-ziel="erstellen">Eigenes Set erstellen</button>` : `<p>Erstelle ein Set aus einem Thema oder aus deinem Material.
+      <button class="btn btn-primary" data-action="klassencode">${sym('code')}Klassencode eingeben</button>
+      <button class="btn btn-ghost" data-action="nav" data-ziel="erstellen">${sym('erstellen')}Eigenes Set erstellen</button>` : `<p>Erstelle ein Set aus einem Thema oder aus deinem Material.
          Was du einmal geöffnet hast, findest du hier wieder, auch ohne Internet.</p>
-      <button class="btn btn-primary" data-action="nav" data-ziel="erstellen">Eigenes Set erstellen</button>`}
-      <button class="btn btn-ghost" data-action="beispiel">Beispiel ausprobieren</button>
+      <button class="btn btn-primary" data-action="nav" data-ziel="erstellen">${sym('erstellen')}Eigenes Set erstellen</button>`}
+      <button class="btn btn-ghost" data-action="beispiel">${sym('beispiel')}Beispiel ausprobieren</button>
     </div>
   `
 }
@@ -498,8 +531,8 @@ function renderSet() {
         <div class="set-sub">${deck.fach ? escHtml(deck.fach) + ' · ' : ''}${total} ${einheit}</div>
 
         ${nurKarten ? '' : `<div class="nv"><div class="bl-modus" style="margin:0 0 14px">
-          <button class="bl-seg on">Üben</button>
-          <button class="bl-seg" data-action="satz" data-modus="blatt">Blatt</button></div></div>`}
+          <button class="bl-seg on">${sym('ueben')}Üben</button>
+          <button class="bl-seg" data-action="satz" data-modus="blatt">${sym('blatt')}Blatt</button></div></div>`}
 
         <div class="set-karte">
           ${fertig ? `<div class="fertig-banner">🎉 Durchgefüttert: alles sitzt in der letzten Stufe.</div>` : ''}
@@ -509,9 +542,9 @@ function renderSet() {
           </div>
           ${renderBoxBar(stats.boxCounts, total)}
           ${dueNow > 0
-            ? `<button class="btn btn-study gross" data-action="study">Jetzt üben · ${dueNow} ${dueNow === 1 ? (nurKarten ? 'Karte' : 'Aufgabe') : einheit}</button>`
+            ? `<button class="btn btn-study gross" data-action="study">${sym('ueben')}Jetzt üben · ${dueNow} ${dueNow === 1 ? (nurKarten ? 'Karte' : 'Aufgabe') : einheit}</button>`
             : `<button class="btn btn-study gross btn-disabled" disabled>Für heute alles gefüttert ✓</button>`}
-          <button class="btn btn-study-all gross" data-action="study-all">Alles durchgehen (${total})</button>
+          <button class="btn btn-study-all gross" data-action="study-all">${sym('wiederholen')}Alles durchgehen (${total})</button>
           ${session.studied > 0 ? `<div class="studied-today">Heute schon ${session.studied} geübt</div>` : ''}
         </div>
 
@@ -546,16 +579,55 @@ function renderSet() {
 
 function renderBoxBar(boxCounts, total) {
   if (total === 0) return ''
-  const colors = ['', '#e88c7a', '#e8c07a', '#d4d07a', '#8ec98c', '#5b9e6b']
+  // Stufe 1 ist neutral (noch nichts gelernt ist kein Fehler), dann Bernstein, dann Grün: alles aus der Palette.
+  const colors = ['', 'oklch(0.86 0.02 75)', 'oklch(0.86 0.07 78)', 'oklch(0.76 0.12 70)', 'oklch(0.74 0.1 145)', 'oklch(0.55 0.13 145)']
   const segs = [1, 2, 3, 4, 5].map(box => {
     const pct = ((boxCounts[box] || 0) / total * 100).toFixed(1)
     if (Number(pct) === 0) return ''
     return `<div class="box-bar-seg" style="width:${pct}%;background:${colors[box]}" title="Stufe ${box}: ${boxCounts[box] || 0}"></div>`
   }).join('')
-  return `<div class="box-bar">${segs || '<div class="box-bar-seg" style="width:100%;background:#e2d8cf"></div>'}</div>`
+  return `<div class="box-bar">${segs || '<div class="box-bar-seg" style="width:100%;background:var(--border)"></div>'}</div>`
 }
 
 // ── Lernen ───────────────────────────────────────────────────────────────────
+
+// ── Begleiter beim Üben ──────────────────────────────────────────────────────
+//
+// Das eigene Hirn (mit allem aus dem Shop) sitzt oben links und reagiert kurz:
+// ein Hüpfer bei richtig, ein Grübeln bei falsch, dazu ein Satz. Verschmitzt,
+// nicht kindlich, und nie belehrend: Es kommentiert, es bewertet nicht.
+const SPRUECHE = {
+  start: ['Futterzeit.', 'Los gehts.', 'Ich hab Hunger.', 'Auf gehts.'],
+  gut:   ['Mmh, lecker.', 'Sitzt.', 'Das schmeckt.', 'Gut gekaut.', 'Mehr davon.', 'Genau so.'],
+  fast:  ['Fast.', 'Knapp daneben.', 'Beinahe.'],
+  weg:   ['Kommt wieder.', 'Nochmals kauen.', 'Knifflig, gell?', 'Halb so wild.', 'Das üben wir.'],
+}
+const spruch = art => { const l = SPRUECHE[art] || []; return l[Math.floor(Math.random() * l.length)] || '' }
+
+function begleiterHtml(cardState, reaktion) {
+  return `
+    <div class="study-kopfzeile">
+      <div class="begleiter${reaktion ? ' ' + reaktion : ''}" id="begleiter" aria-hidden="true">${avatarHtml(getLook())}</div>
+      <div class="sprech${reaktion ? ' zeigt' : ''}" id="sprech" role="status">${reaktion ? escHtml(spruch(reaktion)) : ''}</div>
+      <div class="box-indicator" title="Stufe ${cardState.box} von 5">
+        ${[1, 2, 3, 4, 5].map(b => `<div class="box-dot ${b === cardState.box ? 'active' : b < cardState.box ? 'done' : ''}"></div>`).join('')}
+        <span class="box-label">Stufe ${cardState.box}</span>
+      </div>
+    </div>`
+}
+/** Das Hirn reagiert auf der aktuellen Seite (Aufgaben, Tippen). */
+function begleiterReagiert(art) {
+  const b = document.getElementById('begleiter'), sp = document.getElementById('sprech')
+  if (!b || !sp) return
+  b.classList.remove('gut', 'fast', 'weg', 'start'); void b.offsetWidth; b.classList.add(art)
+  sp.textContent = spruch(art); sp.classList.add('zeigt')
+}
+/** Reaktion für die nächste Seite abholen (einmal). Die erste Karte bekommt einen Gruss. */
+function reaktionHolen() {
+  const r = state.reaktion || (state.queueIdx === 0 && !state.tipp && !state.flipped ? 'start' : null)
+  state.reaktion = null
+  return r
+}
 
 function renderStudy() {
   const { deck, queue, queueIdx, flipped } = state
@@ -567,6 +639,9 @@ function renderStudy() {
   // Nur die Anzeige dreht sich — der Fortschritt hängt weiter an der Original-Vorderseite.
   const card      = settings.reversed ? { ...raw, front: raw.back, back: raw.front } : raw
   const cardState = getCardState(raw.quelle || deck.name, raw.id)
+  // Beim Tippen steht das Ergebnis auf derselben Seite: Das Hirn reagiert darauf.
+  const TIPP_ART = { richtig: 'gut', beinahe: 'fast', falsch: 'weg', aufgegeben: 'weg' }
+  const reaktion = state.tipp ? TIPP_ART[state.tipp.ergebnis] : reaktionHolen()
 
   root.innerHTML = `
     <div class="screen study-screen">
@@ -580,12 +655,7 @@ function renderStudy() {
       </div>
 
       <main class="study-main">
-        <div class="box-indicator">
-          ${[1, 2, 3, 4, 5].map(b =>
-            `<div class="box-dot ${b === cardState.box ? 'active' : b < cardState.box ? 'done' : ''}"></div>`
-          ).join('')}
-          <span class="box-label">Stufe ${cardState.box}</span>
-        </div>
+        ${begleiterHtml(cardState, reaktion)}
 
         ${settings.tippen ? tippAnsicht(card) : `
         <div class="card-scene" id="card-scene">
@@ -633,6 +703,7 @@ function renderStudyAufgabe(raw) {
   const { deck, queue, queueIdx } = state
   const cardState = getCardState(raw.quelle || deck.name, raw.id)
   const box = h('div', { class: 'stack' }), fb = h('div')
+  const kopfzeile = document.createElement('template'); kopfzeile.innerHTML = begleiterHtml(cardState, reaktionHolen())
   root.replaceChildren(h('div', { class: 'screen study-screen' },
     h('header', { class: 'study-header' },
       h('button', { class: 'kopf-x', 'data-action': 'back-to-set', 'aria-label': 'Zurück' }, '←'),
@@ -640,12 +711,11 @@ function renderStudyAufgabe(raw) {
       h('div', { class: 'study-progress-text' }, (queueIdx + 1) + ' / ' + queue.length)),
     h('div', { class: 'study-progress-bar' }, h('div', { class: 'study-progress-fill', style: 'width:' + (queueIdx / queue.length * 100) + '%' })),
     h('main', { class: 'study-main' },
-      h('div', { class: 'box-indicator' },
-        ...[1, 2, 3, 4, 5].map(b => h('div', { class: 'box-dot ' + (b === cardState.box ? 'active' : b < cardState.box ? 'done' : '') })),
-        h('span', { class: 'box-label' }, 'Stufe ' + cardState.box)),
+      kopfzeile.content.firstElementChild,
       h('div', { class: 'nv nv-in' }, box, fb))))
   renderAufgabe(raw, box, res => {
     const ok = res.r === 'richtig', nea = res.r === 'beinahe'
+    begleiterReagiert(ok ? 'gut' : nea ? 'fast' : 'weg')
     fb.append(h('div', { class: 'fb ' + (ok ? 'ok' : nea ? 'near' : 'no') }, h('span', null, ok ? '✓' : nea ? '~' : '✕'),
       h('div', null, h('b', null, ok ? 'Richtig.' : nea ? 'Beinahe.' : 'Falsch.'), !ok ? ' Richtig: ' + res.correct : '',
         raw.erklaerung ? h('div', { style: 'margin-top:4px;font-weight:600' }, raw.erklaerung) : null)))
@@ -771,6 +841,9 @@ function gradeCard(grade) {
     const gegeben = a ? (a.given || '(leer)') : state.tipp ? (state.tipp.eingabe || '(aufgegeben)') : '(Karteikarte: ' + (grade === 1 ? 'nur teilweise gewusst' : 'nicht gewusst') + ')'
     state.sessionFehler.push({ frage: raw.t && raw.t !== 'karte' ? frageText(raw) : (raw.front ?? raw.vorne ?? ''), gegeben, richtig: a?.correct || (raw.t && raw.t !== 'karte' ? solText(raw) : (raw.back ?? raw.hinten ?? '')), quelle: raw.quelle })
   }
+  // Bei Aufgaben und beim Tippen hat das Hirn schon reagiert; bei Karteikarten zeigt es die Reaktion auf der nächsten Karte.
+  const schonGezeigt = (raw.t && raw.t !== 'karte') || state.tipp
+  state.reaktion = schonGezeigt ? null : grade >= 2 ? 'gut' : grade === 1 ? 'fast' : 'weg'
   state.letzteAntwort = null
   state.queueIdx++
   state.flipped = false
@@ -952,7 +1025,8 @@ function renderLaden() {
   root.innerHTML = `
     <div class="screen laden-screen">
       <header class="app-header">
-        <button class="btn btn-ghost back-btn" data-action="home">← Zurück</button>
+        <button class="kopf-x" data-action="home" aria-label="Zurück">←</button>
+        <div class="shop-titel">${sym('laden')}Shop</div>
         <div class="laden-konto">${total.toLocaleString('de-CH')} Krümel</div>
       </header>
 
@@ -1091,7 +1165,7 @@ function installBanner() {
       : `Leg Hirnfutter auf deinen Startbildschirm. ${grund}`
 
   const knopf = zustand === 'prompt'
-    ? `<button class="btn btn-primary btn-sm" data-action="install">Hinzufügen</button>`
+    ? `<button class="btn btn-primary btn-sm" data-action="install">${sym('installieren')}Hinzufügen</button>`
     : zustand === 'ios'
       ? `<button class="btn btn-primary btn-sm" data-action="ios-guide">So geht's</button>`
       : ''
@@ -1165,7 +1239,7 @@ function showHilfe() {
         ${punkt('Die fünf Stufen', 'Jede Karte und jede Aufgabe liegt auf einer Stufe. Neu beginnt alles auf Stufe 1. Weisst du die Antwort, steigt sie eine Stufe auf. Weisst du sie nicht, geht sie zurück auf Stufe 1.')}
         ${punkt('Fällig', 'Je höher die Stufe, desto länger die Pause bis zum nächsten Mal. «Fällig» heisst: Heute ist diese Karte wieder dran. Ist nichts fällig, hast du für heute alles gemacht.')}
         ${punkt('Sitzt', 'Eine Karte «sitzt», wenn sie auf Stufe 4 oder 5 liegt. Du hast sie also mehrmals richtig gewusst, mit Pausen dazwischen. Darum bringt es mehr, jeden Tag kurz zu üben als einmal lang.')}
-        ${punkt('Krümel', 'Krümel bekommst du, wenn eine fällige Karte eine Stufe aufsteigt. Im Laden tauschst du sie gegen Sachen für dein Hirn. Wer zusätzlich übt, lernt mehr, bekommt dafür aber keine Krümel.')}
+        ${punkt('Krümel', 'Krümel bekommst du, wenn eine fällige Karte eine Stufe aufsteigt. Im Shop tauschst du sie gegen Sachen für dein Hirn. Wer zusätzlich übt, lernt mehr, bekommt dafür aber keine Krümel.')}
         ${punkt('Üben und Blatt', 'Bei «Üben» kommt eine Aufgabe nach der anderen. «Blatt» zeigt alle Aufgaben wie eine Prüfung: ausfüllen, auswerten, auf Wunsch drucken.')}
         ${punkt('Prüfung', 'Trag auf der Seite eines Sets das Datum der Prüfung ein. Dann steht das Set auf dem Start zuoberst. Nach der Prüfung nimmst du es vom Start.')}
         ${punkt('Deine Daten', 'Alles liegt nur auf diesem Gerät. In der Bibliothek unter «Daten sichern» lädst du eine Sicherung herunter, zum Beispiel vor einem Handywechsel.')}

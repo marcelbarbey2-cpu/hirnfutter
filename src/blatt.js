@@ -347,9 +347,9 @@ export function renderSatz(root, deck, hooks) {
     werkzeug.replaceChildren(
       h('button', { class: 'lnk', onclick: () => druck(false) }, '🖨 Drucken'),
       h('button', { class: 'lnk', onclick: () => druck(true) }, '🖨 Mit Lösungsblatt'),
-      h('label', { class: 'crit', style: 'padding:0;font-size:14px' }, lcb, 'Lösungen anzeigen'),
+      h('label', { class: 'crit', style: 'padding:0;font-size:15px' }, lcb, 'Lösungen anzeigen'),
       h('button', { class: 'lnk', onclick: () => zeichne(true) }, '↺ Neu beginnen'),
-      letzt ? h('div', { style: 'flex-basis:100%;font-size:13.5px;font-weight:700;color:var(--text-2)' }, 'Letztes Mal: ' + letzt.p + ' von ' + letzt.max + ' Punkten (' + letzt.d + ')') : null)
+      letzt ? h('div', { style: 'flex-basis:100%;font-size:13px;font-weight:700;color:var(--text-2)' }, 'Letztes Mal: ' + letzt.p + ' von ' + letzt.max + ' Punkten (' + letzt.d + ')') : null)
     if (!neu && entwurfLaden()) werkzeug.append(h('div', { class: 'fb ok', style: 'flex-basis:100%;margin:0' }, h('span', null, '✓'), h('div', null, 'Deine Eingaben von vorhin sind wieder da. Mit «Neu beginnen» leerst du das Blatt.')))
     zusammenfassung()
   }
@@ -395,9 +395,9 @@ export function renderSatz(root, deck, hooks) {
         h('div', { style: 'font-size:13px;font-weight:600;color:var(--text-2)' }, 'Eine Schätzung: Punkte ÷ ' + max + ' × 5 + 1, auf halbe Noten gerundet.')))
     } }, 'Note berechnen')
     unten.append(h('div', { style: 'text-align:center' },
-      h('div', { class: 'serif', style: 'font-size:24px;font-weight:600' }, pts.toLocaleString('de-CH') + ' von ' + max + ' Punkten'),
+      h('div', { class: 'serif', style: 'font-size:26px;font-weight:600' }, pts.toLocaleString('de-CH') + ' von ' + max + ' Punkten'),
       h('div', { style: 'font-size:15px;font-weight:700;color:var(--text-2)' }, Math.round(pts / max * 100) + '% richtig'),
-      offen ? h('div', { style: 'font-size:14px;font-weight:600' }, offen + ' Selbstkontrolle(n) noch offen: bewerte dich oben.') : null,
+      offen ? h('div', { style: 'font-size:15px;font-weight:600' }, offen + ' Selbstkontrolle(n) noch offen: bewerte dich oben.') : null,
       S.kruemel + (S.bonus?.bonus || 0) > 0 ? h('div', { style: 'font-size:18px;font-weight:800;color:var(--accent-h)' }, '+' + (S.kruemel + (S.bonus?.bonus || 0)) + ' Krümel') : null,
       S.bonus?.neueMarke ? h('div', { class: 'serie-chip' }, '🔥 ' + S.bonus.neueMarke + ' Tage in Folge') : null), nb, noteBox)
     const fehler = cards.map(c => ({ c, r: S.res.get(c.id) })).filter(x => x.r && x.r.r !== 'richtig')

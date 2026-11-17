@@ -60,7 +60,7 @@ body { background: var(--bg); }
   padding: 9px 20px;
   border-radius: var(--radius);
   font-family: inherit;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   cursor: pointer;
   border: none;
@@ -112,14 +112,14 @@ body { background: var(--bg); }
 
 .btn-delete {
   color: var(--text-3);
-  font-size: 12px;
+  font-size: 13px;
   padding: 6px 8px;
 }
 .btn-delete:hover { color: var(--red); background: var(--red-light); }
 
 .btn-reset {
   color: var(--text-3);
-  font-size: 14px;
+  font-size: 15px;
   padding: 6px 8px;
 }
 .btn-reset:hover { color: var(--accent); background: oklch(0.95 0.06 65); }
@@ -136,6 +136,7 @@ body { background: var(--bg); }
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: center;
   gap: 3px;
   padding: 10px 6px;
   border-radius: var(--radius);
@@ -180,7 +181,7 @@ body { background: var(--bg); }
 }
 
 .logo-icon {
-  font-size: 20px;
+  font-size: 22px;
   color: var(--accent);
   line-height: 1;
 }
@@ -210,7 +211,7 @@ body { background: var(--bg); }
 .app-footer {
   padding: 12px 24px;
   text-align: center;
-  font-size: 12px;
+  font-size: 13px;
   color: var(--text-3);
   border-top: 1px solid var(--border);
 }
@@ -248,7 +249,7 @@ body { background: var(--bg); }
   margin: 18px auto 0;
   padding: 10px;
   text-align: center;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   color: var(--text-2);
   text-decoration: none;
@@ -383,7 +384,7 @@ body { background: var(--bg); }
 
 .study-deck-name {
   flex: 1;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: var(--text);
   text-align: center;
@@ -442,7 +443,7 @@ body { background: var(--bg); }
 .box-dot.active { background: var(--accent); }
 
 .box-label {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--text-3);
   margin-left: 4px;
@@ -510,7 +511,7 @@ body { background: var(--bg); }
 
 .card-text {
   font-family: 'Bitter', Georgia, serif;
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1.5;
   color: var(--text);
   max-width: 55ch;
@@ -589,7 +590,7 @@ body { background: var(--bg); }
 }
 
 .stat-lbl {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--text-3);
   text-transform: uppercase;
@@ -667,7 +668,7 @@ body { background: var(--bg); }
   color: oklch(0.97 0.005 75);
   padding: 10px 20px;
   border-radius: var(--radius);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 600;
   box-shadow: var(--shadow-lg);
   opacity: 0;
@@ -696,8 +697,7 @@ body { background: var(--bg); }
   .summary-card   { padding: 32px 20px; }
   /* Auf dem Handy zählt das Wort, nicht das Zeichen: «~» und «★» sagen
      niemandem, was gemeint ist — «Schwer» und «Einfach» schon. */
-  .grade-icon     { display: none; }
-  .grade-btn span { font-size: 12.5px; }
+  .grade-btn span { font-size: 13px; }
   .grade-btn      { padding: 13px 4px; }
   .grade-buttons  { gap: 6px; }
 }
@@ -738,9 +738,9 @@ body { background: var(--bg); }
 }
 .set-row-meta { display: flex; align-items: center; gap: 8px; }
 .set-row-meta .secure-bar { flex: 0 1 90px; }
-.set-row-count { font-size: 12px; color: var(--text-3); white-space: nowrap; }
+.set-row-count { font-size: 13px; color: var(--text-3); white-space: nowrap; }
 .uptodate-badge {
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--green);
   background: var(--green-light);
@@ -765,7 +765,7 @@ body { background: var(--bg); }
   margin: 0 0 4px;
   overflow-wrap: anywhere;
 }
-.set-sub { color: var(--text-3); font-size: 14px; margin-bottom: 22px; }
+.set-sub { color: var(--text-3); font-size: 15px; margin-bottom: 22px; }
 .set-secure { margin-bottom: 12px; }
 .set-actions { display: flex; gap: 10px; flex-wrap: wrap; margin: 22px 0 18px; }
 .set-actions .btn { flex: 1; min-width: 140px; }
@@ -781,7 +781,7 @@ body { background: var(--bg); }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  font-size: 14px;
+  font-size: 15px;
   color: var(--text-2);
   cursor: pointer;
 }
@@ -832,7 +832,7 @@ body { background: var(--bg); }
   box-shadow: var(--shadow-lg);
 }
 .guide-titel {
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 800;
   letter-spacing: -0.015em;
   margin: 0 0 18px;
@@ -901,7 +901,7 @@ body { background: var(--bg); }
 .futter-zahl { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--text-2); font-variant-numeric: tabular-nums; }
 .futter-bar { height: 6px; border-radius: 999px; background: var(--surface-2); overflow: hidden; }
 .futter-bar-fill { height: 100%; background: var(--accent); border-radius: 999px; transition: width 0.5s ease; }
-.futter-ziel { margin-top: 7px; font-size: 12px; color: var(--text-3); }
+.futter-ziel { margin-top: 7px; font-size: 13px; color: var(--text-3); }
 
 /* Meilenstein pro Set */
 .fertig-banner {
@@ -910,7 +910,7 @@ body { background: var(--bg); }
   border-radius: var(--radius);
   background: var(--green-light);
   color: oklch(0.38 0.12 145);
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
 }
 
@@ -924,7 +924,7 @@ body { background: var(--bg); }
 .summary-kruemel-leer { font-size: 13px; font-weight: 600; color: var(--text-3); line-height: 1.4; }
 .summary-serie {
   margin-bottom: 6px;
-  font-size: 14px;
+  font-size: 15px;
   font-weight: 700;
   color: oklch(0.5 0.16 45);
 }
@@ -967,7 +967,7 @@ body { background: var(--bg); }
   background: none;
   padding: 0;
   font: inherit;
-  font-size: 12px;
+  font-size: 13px;
   font-weight: 700;
   color: var(--accent-hover);
   cursor: pointer;
@@ -977,7 +977,7 @@ body { background: var(--bg); }
 
 /* ── Laden ─────────────────────────────────────────────────────────────────── */
 .laden-main { flex: 1; padding: 20px 16px 40px; overflow-y: auto; max-width: 640px; width: 100%; margin: 0 auto; }
-.laden-konto { font-size: 14px; font-weight: 800; color: var(--accent-hover); font-variant-numeric: tabular-nums; }
+.laden-konto { font-size: 15px; font-weight: 800; color: var(--accent-hover); font-variant-numeric: tabular-nums; }
 .laden-buehne { width: 190px; margin: 0 auto 22px; }
 .avatar-gross { box-shadow: var(--shadow); }
 
@@ -1007,14 +1007,14 @@ body { background: var(--bg); }
 .laden-bild { max-height: 54px; max-width: 100%; object-fit: contain; }
 .laden-bild-klein { max-height: 42px; }
 .laden-hg { width: 46px; height: 46px; border-radius: 8px; border: 1px solid var(--border); }
-.laden-ohne { font-size: 12px; color: var(--text-3); }
+.laden-ohne { font-size: 13px; color: var(--text-3); }
 
-.laden-titel { font-size: 11.5px; font-weight: 700; text-align: center; line-height: 1.2; }
+.laden-titel { font-size: 11px; font-weight: 700; text-align: center; line-height: 1.2; }
 .laden-preis { font-size: 11px; color: var(--text-3); font-variant-numeric: tabular-nums; }
 .laden-marke { font-size: 10.5px; font-weight: 800; color: var(--accent-hover); text-transform: uppercase; letter-spacing: 0.04em; }
 .laden-marke-still { color: var(--text-3); }
 
-.laden-fuss { font-size: 12px; color: var(--text-3); line-height: 1.5; margin-top: 26px; }
+.laden-fuss { font-size: 13px; color: var(--text-3); line-height: 1.5; margin-top: 26px; }
 .laden-gesperrt { opacity: 0.55; }
 .laden-gesperrt:hover { transform: none; box-shadow: none; }
 .laden-bedingung { font-size: 10px; line-height: 1.25; color: var(--text-3); display: block; }
@@ -1074,7 +1074,7 @@ body { background: var(--bg); }
   background: var(--surface-2);
   color: var(--text);
   font-family: inherit;
-  font-size: 17px;          /* unter 16px zoomt iOS beim Fokus hinein */
+  font-size: 18px;          /* unter 16px zoomt iOS beim Fokus hinein */
   outline: none;
 }
 .tipp-feld:focus { border-color: var(--accent); background: var(--surface); }
@@ -1093,7 +1093,7 @@ body { background: var(--bg); }
 }
 .tipp-doch:hover, .tipp-aufgeben:hover { color: var(--text-2); }
 
-.tipp-frage { font-size: 17px; color: var(--text-2); }
+.tipp-frage { font-size: 18px; color: var(--text-2); }
 
 .tipp-urteil { width: 100%; text-align: center; display: grid; gap: 8px; }
 .tipp-titel { font-size: 15px; font-weight: 800; }
@@ -1119,7 +1119,7 @@ body { background: var(--bg); }
 }
 .tipp-richtige {
   font-family: 'Bitter', Georgia, serif;
-  font-size: 19px;
+  font-size: 18px;
   color: var(--text);
 }
 

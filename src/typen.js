@@ -10,14 +10,14 @@ export function tabelleEl(tb, cell) {
     h('tbody', null, ...tb.zeilen.map((z, r) => h('tr', null, ...z.map((c, i) => h('td', null, cell ? cell(c, r, i) : c)))))))
 }
 const card=(...k)=>h('div',{class:'kk',style:'padding:16px 14px'},...k);
-const prompt_=t=>h('div',{class:'serif',style:'font-size:19px;line-height:1.35'},t);
+const prompt_=t=>h('div',{class:'serif',style:'font-size:18px;line-height:1.35'},t);
 function chips(list,on,cls){return list.map((w,i)=>h('button',{class:'chip '+(cls||''),onclick:()=>on(i)},w))}
 R.mc=(it,box,done)=>{
   const opts=shuffle(it.optionen.map((t,i)=>({t,ok:i===it.richtig})));const btns=[];
   box.append(card(prompt_(it.frage)),...opts.map((o,i)=>{const b=h('button',{class:'opt',onclick:()=>{btns.forEach((x,j)=>{x.disabled=true;if(opts[j].ok)x.classList.add('ok');});if(!o.ok)b.classList.add('no');
     done({r:o.ok?'richtig':'falsch',given:o.t,correct:it.optionen[it.richtig]})}},o.t);btns.push(b);return b}))};
 R.luecke=(it,box,done)=>{
-  const parts=it.text.split(/_{2,}/);const ins=[];const line=h('div',{class:'serif',style:'font-size:19px;line-height:2.1'});
+  const parts=it.text.split(/_{2,}/);const ins=[];const line=h('div',{class:'serif',style:'font-size:18px;line-height:2.1'});
   parts.forEach((p,i)=>{line.append(p);if(i<parts.length-1){const x=h('input',{class:'inl',autocapitalize:'off',autocomplete:'off',spellcheck:'false'});ins.push(x);line.append(x)}});
   const go_=h('button',{class:'btn blue',onclick:()=>{const rs=ins.map((x,i)=>cmp(x.value,it.antworten[i]));ins.forEach(x=>x.disabled=true);go_.hidden=true;
     const r=rs.every(x=>x==='richtig')?'richtig':rs.every(x=>x!=='falsch')?'beinahe':'falsch';
@@ -62,7 +62,7 @@ R.reihenfolgen=(it,box,done)=>{
   box.append(card(prompt_(it.frage)),h('div',{class:'lbl',style:'margin:8px 0 4px'},'Tippe nacheinander an, was zuerst kommt'),list,bank,act);draw()};
 R.wortbanken=(it,box,done)=>{
   const parts=it.text.split(/_{2,}/);const n=parts.length-1;const pool=shuffle([...it.antworten,...it.ablenker]);const fill=Array(n).fill(null);
-  const line=h('div',{class:'serif',style:'font-size:19px;line-height:2.2'}),bank=h('div',{style:'display:flex;flex-wrap:wrap;gap:8px;margin-top:12px'}),act=h('div');
+  const line=h('div',{class:'serif',style:'font-size:18px;line-height:2.2'}),bank=h('div',{style:'display:flex;flex-wrap:wrap;gap:8px;margin-top:12px'}),act=h('div');
   function draw(){line.replaceChildren();parts.forEach((p,i)=>{line.append(p);if(i<n)line.append(h('button',{class:'blank'+(fill[i]!=null?' set':''),onclick:()=>{fill[i]=null;draw()}},fill[i]!=null?pool[fill[i]]:'      '))});
     bank.replaceChildren(...pool.map((w,i)=>h('button',{class:'chip'+(fill.includes(i)?' used':''),onclick:()=>{if(fill.includes(i))return;const k=fill.indexOf(null);if(k>=0){fill[k]=i;draw()}}},w)));
     act.replaceChildren(fill.every(x=>x!=null)?h('button',{class:'btn blue',onclick:()=>{const right=fill.filter((x,i)=>nz(pool[x])===nz(it.antworten[i])).length;done({r:right===n?'richtig':right>0?'beinahe':'falsch',given:fill.map(x=>pool[x]).join(', '),correct:it.antworten.join(', ')})}},'Prüfen'):null)}
@@ -89,8 +89,8 @@ R.kurzantworten=(it,box,done)=>{
   const btn=h('button',{class:'btn blue',onclick:()=>{btn.hidden=true;ta.disabled=true;
     const sc=stichCheck(it,ta.value);
     if(sc){area.replaceChildren(h('div',{class:'kk',style:'margin-top:10px;padding:14px'},h('div',{class:'lbl'},'Mustersatz'),h('div',{class:'serif',style:'margin-top:4px'},it.muster),
-        sc.fehlt.length?h('div',{style:'margin-top:8px;font-size:14px;font-weight:700'},'In deiner Antwort fehlt: '+sc.fehlt.join(', ')):null,
-        ...it.kriterien.map(k=>h('div',{style:'font-size:14px;font-weight:600;margin-top:4px'},'· '+k))));
+        sc.fehlt.length?h('div',{style:'margin-top:8px;font-size:15px;font-weight:700'},'In deiner Antwort fehlt: '+sc.fehlt.join(', ')):null,
+        ...it.kriterien.map(k=>h('div',{style:'font-size:15px;font-weight:600;margin-top:4px'},'· '+k))));
       return done({r:sc.r,given:ta.value,correct:it.muster})}
     const cb=it.kriterien.map(k=>h('input',{type:'checkbox'}));
     area.replaceChildren(h('div',{class:'kk',style:'margin-top:10px;padding:14px'},h('div',{class:'lbl'},'Musterantwort'),h('div',{class:'serif',style:'margin-top:4px'},it.muster)),

@@ -1,6 +1,7 @@
 // Erstellen in drei Schritten: 1 Material → 2 Auftrag zur KI bringen → 3 Antwort einfügen, gleich speichern.
 // Es ist immer nur der aktuelle Schritt offen; erledigte stehen als kurze Zeile darüber.
 import { h, kopieren, KIS } from './dom.js'
+import { symEl } from './symbole.js'
 import { parseAnswer, promptKarten, promptTest, MIX, TNAME, itemKey } from './format.js'
 import { saveLibSet, neueId } from './bibliothek.js'
 
@@ -57,6 +58,8 @@ export const TYP_INFO = { ...TYPEN, blatt: TYPEN.test, tutor: TYPEN.test }
 // Eine Option ist entweder ein Wert oder ein Paar [Wert, Anzeige].
 const sel = (k, opts) => h('select', { class: 'in', onchange: e => { cr[k] = e.target.value; entwurfSichern() } }, opts.map(o => { const [w, t] = Array.isArray(o) ? o : [o, o]; return h('option', { value: w, selected: w === cr[k] }, t) }))
 const STUFEN = [['5', '5. Klasse'], ['6', '6. Klasse'], ['7', '1. Sek (7. Klasse)'], ['8', '2. Sek (8. Klasse)'], ['9', '3. Sek (9. Klasse)']]
+/** Letzter Knopf beim Erstellen: sagt, was dabei herauskommt. */
+const fertigText = () => cr?.typ === 'karten' ? 'Karteikarten erstellen' : 'Aufgaben erstellen'
 const feld = (l, el) => h('div', null, h('div', { class: 'lbl', style: 'margin-bottom:4px' }, l), el)
 
 export function renderWahl(root, hooks) {
@@ -67,7 +70,7 @@ export function renderWahl(root, hooks) {
     hooks.kopf('Erstellen'),
     h('div', { class: 'seite' },
       h('div', null, h('div', { class: 'serif', style: 'font-size:26px;font-weight:500;line-height:1.15' }, 'Was willst du lernen?'),
-        h('div', { style: 'font-size:14px;color:var(--text-2);margin-top:6px;font-weight:600' }, 'Wähle, was die KI für dich bauen soll.')),
+        h('div', { style: 'font-size:15px;color:var(--text-2);margin-top:6px;font-weight:600' }, 'Wähle, was die KI für dich bauen soll.')),
       entwurfKarte(hooks),
       opt('karten'), opt('test'),
       h('div', { style: 'display:flex;gap:10px;align-items:center;font-size:13px;color:var(--text-2);font-weight:600' },
@@ -83,7 +86,7 @@ function entwurfKarte(hooks) {
   return h('div', { class: 'entwurf-karte' },
     h('div', null, h('div', { style: 'font-weight:800' }, 'Angefangen: ' + was), h('div', { class: 'entwurf-meta' }, 'Schritt ' + (e.schritt || 1) + ' von 3')),
     h('div', { class: 'entwurf-akt' },
-      h('button', { class: 'btn', style: 'height:42px', onclick: () => hooks.waehle(e.typ) }, 'Weitermachen'),
+      h('button', { class: 'btn', style: 'height:42px', onclick: () => hooks.waehle(e.typ) }, symEl('weiter'), 'Weitermachen'),
       h('button', { class: 'lnk', onclick: () => { entwurfWeg(); hooks.neu() } }, 'Verwerfen')))
 }
 
@@ -119,10 +122,10 @@ export function renderErstellen(root, typ, hooks) {
 
   // ── Schritt 1: Material ──
   if (cr.schritt === 1) {
-    const quelle = (q, text) => h('button', { class: 'btn' + (cr.quelle === q ? '' : ' ghost'), style: 'height:44px', 'aria-pressed': String(cr.quelle === q), onclick: () => { cr.quelle = q; entwurfSichern(); re() } }, text)
+    const quelle = (q, text, icon) => h('button', { class: 'btn' + (cr.quelle === q ? '' : ' ghost'), style: 'height:44px', 'aria-pressed': String(cr.quelle === q), onclick: () => { cr.quelle = q; entwurfSichern(); re() } }, symEl(icon), text)
     body.append(
       h('div', { class: 'lbl' }, '1 · Was hast du?'),
-      h('div', { class: 'zwei' }, quelle('text', 'Thema oder Text'), quelle('foto', 'Ich habe ein Foto')),
+      h('div', { class: 'zwei' }, quelle('text', 'Thema oder Text', 'text'), quelle('foto', 'Ich habe ein Foto', 'foto')),
       foto ? h('div', { class: 'fb', style: 'background:var(--surface-2)' }, h('span', null, '📷'),
         h('div', null, 'Das Foto hängst du gleich bei der KI an, zusammen mit dem Auftrag. Hirnfutter selbst sieht es nicht. Achte darauf, dass keine Namen oder Noten darauf stehen.')) : null,
       h('textarea', { class: 'in', style: 'min-height:' + (foto ? '64px' : '110px'),
@@ -139,7 +142,7 @@ export function renderErstellen(root, typ, hooks) {
         cr.prompt = (cr.typ === 'karten' ? promptKarten : promptTest)({ ...cr, thema, blatt: true })
         cr.kopiert = false
         geheZu(2)
-      } }, 'Weiter'),
+      } }, 'Weiter', symEl('weiter')),
       cr.err ? h('div', { class: 'fb no' }, cr.err) : null)
     return
   }
@@ -154,7 +157,7 @@ export function renderErstellen(root, typ, hooks) {
       // Klappt das Kopieren nicht, den Auftrag aufklappen: Dann lässt er sich von Hand markieren.
       if (!await kopieren(cr.prompt, cb)) { auftrag.open = true; return }
       cr.kopiert = true; entwurfSichern(); nachher?.()
-    } }, text)
+    } }, symEl('kopieren'), text)
     return cb
   }
   const kiReihe = () => h('div', { class: 'ki-reihe' }, KIS.map(([n, u]) => h('a', { class: 'btn ghost ki', href: u, target: '_blank', rel: 'noopener' }, n + ' ↗')))
@@ -162,15 +165,15 @@ export function renderErstellen(root, typ, hooks) {
   // ── Schritt 2: bei der KI ──
   if (cr.schritt === 2) {
     const danach = h('div', { class: 'ki-wahl', hidden: !cr.kopiert },
-      h('div', { style: 'font-size:14px;font-weight:700;color:var(--text-2);line-height:1.4' }, foto
+      h('div', { style: 'font-size:15px;font-weight:700;color:var(--text-2);line-height:1.4' }, foto
         ? 'Kopiert. Öffne eine KI, füge den Auftrag ein und hänge dein Foto an (meist über «+» oder die Büroklammer). Dann senden.'
         : 'Kopiert. Öffne eine KI, füge den Auftrag ein und sende ihn ab.'),
       kiReihe(),
-      h('div', { style: 'font-size:14px;font-weight:600;color:var(--text-2);line-height:1.4;margin-top:6px' }, 'Wenn die KI fertig ist: Kopiere ihre ganze Antwort und komm hierher zurück.'),
+      h('div', { style: 'font-size:15px;font-weight:600;color:var(--text-2);line-height:1.4;margin-top:6px' }, 'Wenn die KI fertig ist: Kopiere ihre ganze Antwort und komm hierher zurück.'),
       h('button', { class: 'btn ghost', style: 'height:44px', onclick: () => geheZu(3) }, 'Ich habe die Antwort kopiert →'))
     body.append(
       h('div', { class: 'lbl', style: 'margin-top:6px' }, '2 · Bei der KI'),
-      h('div', { style: 'font-size:14px;font-weight:600;color:var(--text-2);line-height:1.4' }, foto
+      h('div', { style: 'font-size:15px;font-weight:600;color:var(--text-2);line-height:1.4' }, foto
         ? 'Hirnfutter hat einen Auftrag für die KI geschrieben. Kopiere ihn. Bei der KI fügst du ihn ein und hängst das Foto dazu.'
         : 'Hirnfutter hat einen Auftrag für die KI geschrieben. Kopiere ihn und füge ihn bei einer KI ein.'),
       kopierKnopf(cr.kopiert ? 'Nochmals kopieren' : 'Auftrag kopieren', () => { danach.hidden = false }),
@@ -187,18 +190,18 @@ export function renderErstellen(root, typ, hooks) {
   const einf = h('button', { class: 'btn ' + (cr.typ === 'test' ? 'blue' : ''), onclick: async () => {
     let t = ''
     try { t = await navigator.clipboard.readText() } catch {}
-    if (!t.trim()) { cr.err2 = 'Das Einfügen hat nicht geklappt. Füge die Antwort unten von Hand ein und tippe auf «Antwort lesen».'; cr.hand = true; return re() }
+    if (!t.trim()) { cr.err2 = 'Das Einfügen hat nicht geklappt. Füge die Antwort unten von Hand ein und tippe auf «' + fertigText() + '».'; cr.hand = true; return re() }
     cr.answer = t; cr.err2 = ''; entwurfSichern(); lies(); re()
-  } }, cr.teil ? 'Fortsetzung einfügen' : 'Antwort einfügen')
+  } }, symEl('einfuegen'), cr.teil ? 'Fortsetzung einfügen' : 'Antwort einfügen')
   einfKnopf = einf
   body.append(
     h('div', { class: 'lbl', style: 'margin-top:6px' }, '3 · Antwort der KI zurückbringen'),
-    h('div', { style: 'font-size:14px;font-weight:600;color:var(--text-2);line-height:1.4' }, cr.teil ? 'Bisher gelesen: ' + cr.teil.length + ' Einträge. Kopiere jetzt die Fortsetzung der KI.' : 'Kopiere bei der KI die ganze Antwort und tippe dann hier. Das Set öffnet sich danach von selbst.'),
+    h('div', { style: 'font-size:15px;font-weight:600;color:var(--text-2);line-height:1.4' }, cr.teil ? 'Bisher gelesen: ' + cr.teil.length + ' Einträge. Kopiere jetzt die Fortsetzung der KI.' : 'Kopiere bei der KI die ganze Antwort und tippe dann hier. Das Set öffnet sich danach von selbst.'),
     einf, ta,
     h('button', { class: 'btn ghost', style: 'height:44px', onclick: () => {
       if (!cr.answer.trim()) { cr.err2 = 'Bitte zuerst die Antwort der KI einfügen.'; cr.parsed = null } else { cr.err2 = ''; lies() }
       re()
-    } }, 'Antwort lesen'),
+    } }, symEl('erstellen'), fertigText()),
     cr.err2 ? h('div', { class: 'fb no' }, cr.err2) : null)
 
   const p = cr.parsed

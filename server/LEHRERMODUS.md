@@ -17,7 +17,7 @@ Auf dem Server liegt nur Lernmaterial. Es gibt keine Schüler-Logins, keine Sch�
 - Codes sind zufällig, 6 Zeichen, ohne verwechselbare Zeichen (kein 0/O, 1/I/L).
 - Keine Rückmeldung von Schülern an Lehrpersonen. Ob jemand zusätzlich übt, liegt bei den Schülern.
 - Lehrpersonen verwalten ihre Klassen und Sets selbst, inklusive Löschen und Papierkorb.
-- **Eigene Adresse für Lehrpersonen:** Lehrpersonen öffnen https://hirnfutter.pages.dev/lehrer und melden sich dort an. Die Schüleransicht zeigt keinen Hinweis auf den Lehrermodus. Nach der Anmeldung erscheint auf dem Gerät der Reiter «Klassen», auch wenn man die App über die normale Adresse öffnet. Es ist dieselbe App: Sets, die eine Lehrperson erstellt, liegen in derselben Bibliothek.
+- **Eigene Adresse für Lehrpersonen:** Lehrpersonen öffnen https://hirnfutter.pages.dev/lehrer und melden sich dort an. Die Seite fragt zuerst nur nach dem Lehrercode (ohne Reiter) und erklärt den Modus in vier Schritten. Die Schüleransicht zeigt keinen Hinweis auf den Lehrermodus. Nach der Anmeldung erscheint auf dem Gerät der Reiter «Klassen», auch wenn man die App über die normale Adresse öffnet. Es ist dieselbe App: Sets, die eine Lehrperson erstellt, liegen in derselben Bibliothek.
 - Die Verwaltung (Lehrercodes ausstellen und sperren) gehört dem Betreiber. Der Verwaltungsschlüssel gilt gleichzeitig als dessen Lehrercode und öffnet im Lehrermodus zusätzlich den Bereich «Verwaltung».
 
 ## Teile und Stand
@@ -63,9 +63,9 @@ Auf dem Server liegt nur Lernmaterial. Es gibt keine Schüler-Logins, keine Sch�
 - [x] Lehrperson eintragen und Lehrercode ausstellen (wird nur einmal angezeigt)
 - [x] Sperren, entsperren, neuen Code ausstellen (der alte gilt danach nicht mehr)
 - [x] Klassen löschen und aus dem Papierkorb wiederherstellen, direkt unter «Klassen und Codes» jeder Lehrperson
-- [x] Schuljahr: Klassennamen im Format `26_27_Sek_E_Ia` (Sek E: römisch, klein) oder `26_27_Sek_B_1A` (Sek B: Ziffer, gross) zählen am 1. August von selbst hoch (→ `27_28_Sek_E_IIa`). Nach der dritten Sek wird die Klasse einmal archiviert; von Hand wieder aktivieren bleibt möglich. Schüler sehen den Namen lesbar: «Sek E Ia · 2026/27». Andere Namen (z. B. «Wahlfach Informatik») bleiben, wie sie sind.
+- [x] Schuljahr: Klassennamen im Format `26_27_Sek_E_Ia` (Sek E: römisch, klein), `26_27_Sek_P_Ip` (Sek P: römisch, nur p oder q) oder `26_27_Sek_B_1A` (Sek B: Ziffer, gross) zählen am 1. August von selbst hoch (→ `27_28_Sek_E_IIa`). Nach der dritten Sek (Sek P: nach der zweiten, danach Gymnasium) wird die Klasse einmal archiviert; von Hand wieder aktivieren bleibt möglich. Schüler sehen den Namen lesbar: «Sek E Ia · 2026/27». Andere Namen (z. B. «Wahlfach Informatik») bleiben, wie sie sind.
 - [x] «Alle Klassen» als eigene Liste in der Verwaltung: Code, Leitung, übergeben, löschen, wiederherstellen
-- [x] Klassenname zum Auswählen (Sek E / Sek B, Stufe, Buchstabe); das Schuljahr setzt die App. Für Kurse gibt es weiterhin einen freien Namen.
+- [x] Klassenname zum Auswählen (Sek E / Sek B / Sek P, Stufe, Buchstabe); das Schuljahr setzt die App. Für Kurse gibt es weiterhin einen freien Namen.
 - [x] Nach dem Schuljahreswechsel fragt der Lehrermodus einmal pro Klasse, ob die eigenen Sets vom letzten Jahr ausgeblendet werden sollen
 - [x] Der Verwaltungsschlüssel gilt nur, bis die App geschlossen wird, und steht nie in einer Sicherungsdatei
 - [x] Versionsnummer: `VERSION` in `server/worker.js` und `SERVER_VERSION` in `src/server-adresse.js` müssen gleich sein. Passt der Worker nicht zur App, warnt die Verwaltung.

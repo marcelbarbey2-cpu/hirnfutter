@@ -57,7 +57,7 @@ export async function kopieren(text, btn) {
     try { ok = document.execCommand('copy') } catch {}
     t.remove()
   }
-  if (btn) { const o = btn.textContent; btn.textContent = ok ? '✓ Kopiert' : 'Nicht kopiert: bitte von Hand markieren'; setTimeout(() => btn.textContent = o, 1800) }
+  if (btn) { const o = btn.innerHTML; btn.textContent = ok ? '✓ Kopiert' : 'Nicht kopiert: bitte von Hand markieren'; setTimeout(() => btn.innerHTML = o, 1800) } // innerHTML: das Icon bleibt
   return ok
 }
 

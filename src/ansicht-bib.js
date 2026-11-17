@@ -6,6 +6,7 @@ import { getSets, sicherung, wiederherstellen, sicherungInfo, setsAufGeraet, ist
 import { setLink } from './teilen.js'
 import { getKlassen, klasseVerlassen, alleAbgleichen, eigeneKopie, serverBereit, zeigeCode, getLehrercode, anzeigeName, ungespeichert, veroeffentlichen, appStand } from './klassen.js'
 import { klassencodeDialog, lehrerFokus } from './ansicht-klassen.js'
+import { symEl } from './symbole.js'
 import { TYP_INFO } from './erstellen.js'
 
 function exportText(s) {
@@ -65,8 +66,8 @@ function klassenBereich(hooks) {
   const datum = t => t ? new Date(t).toLocaleString('de-CH', { day: 'numeric', month: 'numeric', hour: '2-digit', minute: '2-digit' }) : 'noch nie'
   const box = h('div', { class: 'bib-klassen' },
     h('div', { class: 'bib-klassen-kopf' }, h('h2', { style: 'margin:0' }, 'Meine Klassen'),
-      h('button', { class: 'btn ghost', style: 'height:40px;padding:0 14px;font-size:14px', onclick: () => klassencodeDialog(r => { ui.meldung = '«' + anzeigeName(r.klasse.name) + '» hinzugefügt: ' + (r.ergebnis.neu + r.ergebnis.geaendert) + (r.ergebnis.neu + r.ergebnis.geaendert === 1 ? ' Set.' : ' Sets.'); RE() }) }, '+ Klassencode')),
-    kl.length ? null : h('div', { style: 'font-size:14px;font-weight:600;color:var(--text-2)' }, 'Hast du von deiner Lehrperson einen Klassencode bekommen? Tippe ihn hier ein.'),
+      h('button', { class: 'btn ghost', style: 'height:40px;padding:0 14px;font-size:15px', onclick: () => klassencodeDialog(r => { ui.meldung = '«' + anzeigeName(r.klasse.name) + '» hinzugefügt: ' + (r.ergebnis.neu + r.ergebnis.geaendert) + (r.ergebnis.neu + r.ergebnis.geaendert === 1 ? ' Set.' : ' Sets.'); RE() }) }, symEl('code'), 'Klassencode')),
+    kl.length ? null : h('div', { style: 'font-size:15px;font-weight:600;color:var(--text-2)' }, 'Hast du von deiner Lehrperson einen Klassencode bekommen? Tippe ihn hier ein.'),
     ...kl.map(k => {
       const weg = h('button', { class: 'lnk', onclick: () => { if (!weg.dataset.a) { weg.dataset.a = 1; weg.textContent = 'Wirklich? Die Sets der Klasse verschwinden.'; return } klasseVerlassen(k.code); RE() } }, 'Entfernen')
       return h('div', { class: 'bib-klasse' },
@@ -144,7 +145,7 @@ export function renderBibliothek(root, hooks) {
           hooks.neu()
         } }, 'Änderung an die Klasse schicken') : null,
         lpAn ? h('button', { class: 'lnk', onclick: () => { lehrerFokus(x.id); hooks.lehrer() } }, x.s.lp ? 'In weitere Klasse veröffentlichen' : 'In Klasse veröffentlichen') : null,
-        h('button', { class: 'lnk', onclick: () => { ui.edit = x.id; hooks.neu(); window.scrollTo(0, 0) } }, 'Bearbeiten'), tl, weitere,
+        h('button', { class: 'lnk', onclick: () => { ui.edit = x.id; hooks.neu(); window.scrollTo(0, 0) } }, symEl('bearbeiten'), 'Bearbeiten'), tl, weitere,
         h('button', { class: 'lnk', onclick: () => { ui.weg = x.s; deleteLibSet(x.id); hooks.neu() } }, 'Löschen'))
     } else akt.append(loeschen('Aus Liste nehmen', () => hooks.vergiss(x.id)))
     const pause = istPausiert(x.titel)
@@ -202,9 +203,9 @@ export function renderBibliothek(root, hooks) {
     null) // Die früheren Filterreihen (Art, Fach, Sortierung) braucht es nicht mehr: Die Fächer sind die Übersicht.
 
   const inhalt = !alle.length
-    ? h('div', { style: 'font-size:14px;color:var(--text-2);font-weight:600' }, 'Noch keine Sets. Erstelle eines unter «Erstellen».')
+    ? h('div', { style: 'font-size:15px;color:var(--text-2);font-weight:600' }, 'Noch keine Sets. Erstelle eines unter «Erstellen».')
     : !treffer.length
-      ? h('div', { style: 'font-size:14px;color:var(--text-2);font-weight:600' }, 'Nichts gefunden.')
+      ? h('div', { style: 'font-size:15px;color:var(--text-2);font-weight:600' }, 'Nichts gefunden.')
       : h('div', { class: 'bib-liste' }, gruppen.map(g => {
         // Normalzustand: zu. Offen bleibt nur, was man in dieser Sitzung selbst aufgeklappt hat (und alles bei der Suche).
         const d = h('details', { class: 'bib-grp', open: suche || ui.auf.has(g.f) },
@@ -223,8 +224,8 @@ export function renderBibliothek(root, hooks) {
       ui.meldung ? h('div', { class: 'fb ok' }, h('span', null, '✓'), h('div', null, ui.meldung)) : null,
       alle.length > 4 ? filter : null,
       inhalt,
-      serverBereit() ? klassenBereich() : null,
-      h('details', { class: 'bib-imp' }, h('summary', null, 'Daten sichern'),
+      serverBereit() && (!getLehrercode() || getKlassen().length) ? klassenBereich() : null, // Lehrpersonen brauchen keinen Klassencode
+      h('details', { class: 'bib-imp' }, h('summary', null, symEl('sichern'), 'Daten sichern'),
         h('div', { style: 'display:flex;flex-direction:column;gap:10px;margin-top:10px' },
           h('div', { style: 'font-size:13px;font-weight:600;color:var(--text-2);line-height:1.4' }, 'Alle Sets, dein Fortschritt und deine Krümel liegen nur auf diesem Gerät. Sichere sie als Datei, z. B. vor einem Handywechsel.'),
           h('button', { class: 'btn ghost', style: 'height:44px', onclick: sicherungLaden }, 'Sicherung herunterladen'),
@@ -269,7 +270,7 @@ export function renderBibliothek(root, hooks) {
         set.items = p.items; set.typ = p.items.every(i => i.t === 'karte') ? 'karten' : 'test'
         saveLibSet(set); hooks.neu()
       } }, 'Einfügen'), meldung)),
-      h('div', { style: 'font-size:12px;font-weight:600;color:var(--text-2);text-align:center;margin-top:6px' }, 'Hirnfutter · Stand ' + appStand())),
+      h('div', { style: 'font-size:13px;font-weight:600;color:var(--text-2);text-align:center;margin-top:6px' }, 'Hirnfutter · Stand ' + appStand())),
     hooks.nav()))
   ui.weg = null // «Rückgängig» gilt nur bis zur nächsten Aktion
   ui.meldung = ''
