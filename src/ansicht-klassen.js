@@ -7,7 +7,7 @@ import {
   klasseAnlegen, klasseAendern, klasseLoeschen, klasseWiederherstellen,
   setLoeschen, setWiederherstellen, veroeffentlichen, aufGeraetHolen, ungespeichert,
   serverPasst, anzeigeName,
-  verwLehrer, verwLehrerNeu, verwSperren, verwNeuerCode, verwLoeschen, verwUebergeben, klasseBeitretenLp, klasseVerlassenLp,
+  verwLehrer, verwLehrerNeu, verwSperren, verwNeuerCode, verwLoeschen, verwUebergeben, verwKlasse, verwKlasseSet, verwSetLoeschen, verwSetWieder, klasseBeitretenLp, klasseVerlassenLp,
 } from './klassen.js'
 import { symEl } from './symbole.js'
 
@@ -385,9 +385,45 @@ export function renderLehrer(root, hooks) {
       box.append(h('div', { class: 'lp-vk' },
         h('span', null, k.name, h('span', { class: 'lp-meta' }, 'geleitet von ' + k.leiter.name + ((k.lehrer || []).length > 1 ? ' · ' + k.lehrer.length + ' Lehrpersonen' : '') + (k.archiviert ? ' · archiviert' : ''))),
         h('span', { class: 'lp-code' + (k.archiviert ? ' aus' : ''), style: 'font-size:16px;padding:5px 8px' }, zeigeCode(k.code)),
-        andere.length ? wahl : null, weg))
+        andere.length ? wahl : null, weg, verwSets(k)))
     }
     return box
+  }
+
+  /** Verwaltung: alle Sets einer Klasse, auch von anderen Lehrpersonen. Für den Notfall: ausblenden, entfernen, löschen. */
+  function verwSets(k) {
+    const key = 'vs|' + k.code
+    const inhalt = h('div', { class: 'lp-vsets' }, h('div', { class: 'lp-hinweis' }, 'Wird geladen …'))
+    const det = h('details', { class: 'lp-det lp-vk-sets', open: L.offen.has(key) }, h('summary', null, 'Sets in der Klasse'), inhalt)
+    const laden = async () => {
+      try { zeigen(await verwKlasse(k.code)) }
+      catch (e) { inhalt.replaceChildren(h('div', { class: 'fb no' }, h('span', null, '✕'), h('div', null, e.message))) }
+    }
+    const aendern = async (fn, text) => {
+      try { await fn(); await laden(); inhalt.prepend(h('div', { class: 'fb ok' }, h('span', null, '✓'), h('div', null, text))) }
+      catch (e) { inhalt.prepend(h('div', { class: 'fb no' }, h('span', null, '✕'), h('div', null, e.message))) }
+    }
+    function zeigen(d) {
+      if (!d.sets.length) { inhalt.replaceChildren(h('div', { class: 'lp-hinweis' }, 'In dieser Klasse liegen keine Sets.')); return }
+      inhalt.replaceChildren(
+        h('div', { class: 'lp-hinweis' }, 'Als Verwaltung kannst du hier jedes Set bearbeiten, auch von anderen Lehrpersonen. Gedacht für den Notfall; sonst macht das die Lehrperson selbst.'),
+        ...d.sets.map(s => {
+          const loesch = h('button', { class: 'lnk lp-gefahr', onclick: () => {
+            if (!loesch.dataset.a) { loesch.dataset.a = 1; loesch.textContent = 'Wirklich löschen? Das Set verschwindet aus allen Klassen. ' + (s.von || 'Die Lehrperson') + ' kann es 30 Tage lang wiederherstellen.'; return }
+            aendern(() => verwSetLoeschen(s.id), '«' + s.titel + '» liegt im Papierkorb.')
+          } }, 'Set löschen')
+          return h('div', { class: 'lp-set' + (s.sichtbar && !s.geloescht ? '' : ' aus') },
+            h('div', { class: 'lp-set-t' }, s.titel, h('span', { class: 'lp-meta' }, [s.fach, s.thema, 'von ' + (s.von || '?'), anz(s.n, s.typ)].filter(Boolean).join(' · ') + (s.geloescht ? ' · im Papierkorb' : s.sichtbar ? '' : ' · ausgeblendet'))),
+            s.geloescht
+              ? h('button', { class: 'lnk', onclick: () => aendern(() => verwSetWieder(s.id), '«' + s.titel + '» ist wiederhergestellt.') }, 'Wiederherstellen')
+              : h('button', { class: 'lnk', onclick: () => aendern(() => verwKlasseSet(k.code, s.id, s.sichtbar ? 'ausblenden' : 'zeigen'), s.sichtbar ? 'Ausgeblendet.' : 'Wieder sichtbar.') }, s.sichtbar ? 'Für Schüler ausblenden' : 'Für Schüler wieder zeigen'),
+            s.geloescht ? null : h('button', { class: 'lnk', onclick: () => aendern(() => verwKlasseSet(k.code, s.id, 'entfernen'), '«' + s.titel + '» ist aus der Klasse genommen.') }, 'Aus dieser Klasse nehmen'),
+            s.geloescht ? null : loesch)
+        }))
+    }
+    det.addEventListener('toggle', () => { if (det.open) { L.offen.add(key); laden() } else L.offen.delete(key) })
+    if (det.open) laden()
+    return det
   }
 }
 /** Aus der Bibliothek: dieses Set im Lehrermodus zuoberst zeigen. */

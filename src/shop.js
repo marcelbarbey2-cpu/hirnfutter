@@ -49,6 +49,9 @@ const KOEPFE = {
   matschbirne: {"bild": {"links": -1.7517169810676414, "oben": 19.476010526280255, "breite": 80.99007801687685, "hoehe": 54.83363333420521}, "augeLinks": {"x": 0.2735, "y": 0.62299}, "augeRechts": {"x": 0.46688, "y": 0.64572}},
   denklaus: {"bild": {"links": 4.597885722752537, "oben": 16.148277223207863, "breite": 87.08608065611801, "hoehe": 58.96087930938309}, "augeLinks": {"x": 0.18162, "y": 0.63369}, "augeRechts": {"x": 0.36111, "y": 0.65909}},
   rudihirn: {"bild": {"links": -6.43084083536586, "oben": 11.194425532401219, "breite": 92.29723151068704, "hoehe": 62.48904402048664}, "augeLinks": {"x": 0.2906, "y": 0.68048}, "augeRechts": {"x": 0.46047, "y": 0.69786}},
+  geistesblitz:  { bild: { links: 6.391, oben: 5.754, breite: 65.829, hoehe: 68.482 }, augeLinks: { x: 0.2172, y: 0.6972 }, augeRechts: { x: 0.4562, y: 0.7163 } },
+  denkzeppelin:  { bild: { links: 6.171, oben: 4.822, breite: 66.065, hoehe: 69.776 }, augeLinks: { x: 0.2141, y: 0.6867 }, augeRechts: { x: 0.45, y: 0.7055 } }, // zeigt die Denkblase (Kennung blieb)
+  synapsenkrone: { bild: { links: 6.391, oben: 8.1,   breite: 65.829, hoehe: 66.481 }, augeLinks: { x: 0.2141, y: 0.6806 }, augeRechts: { x: 0.4562, y: 0.7003 } },
   basis: {
     bild: { links: 4.279, oben: 28.464, breite: 69.272, hoehe: 46.883 },
     augeLinks:  { x: 0.2322, y: 0.5380 }, augeRechts: { x: 0.4593, y: 0.5624 },
@@ -94,6 +97,7 @@ const KOEPFE = {
  */
 const BRILLEN_GEO = {
   nachtblick: { widthFactor: 2.71, xOffset: 0, yOffset: 0.045 },
+  durchblick: { widthFactor: 2.3907, xOffset: 0.0036, yOffset: -0.0259 }, // Glasmitten gemessen
   lamettaalarm: { widthFactor: 2.29, xOffset: 0, yOffset: -0.060 },
   rund:          { widthFactor: 2.2812, xOffset: -0.0052, yOffset: 0.0220 },
   sonnenbrille:  { widthFactor: 2.2371, xOffset:  0.0155, yOffset: 0.0181 },
@@ -126,6 +130,8 @@ const HALS_GEO = {
 
 /** Begleiter steht neben dem Hirn — ebenfalls aus den Augen abgeleitet. */
 const BEGLEITER_GEO = { widthFactor: 1.7524, xOffset: 3.5035, yOffset: 0.6203 }
+/** Begleiter, deren Bild breiter ist als die Figur (Flügel, Ring …): etwas grösser zeichnen, damit die Figur gleich gross wirkt. */
+const BEGLEITER_BREITE = { buhbert: 2.15, knurps: 2.15, flatterkeks: 2.15, kruemelmann: 2.15, flocki: 2.15, paeckli: 2.15, 'orbit-otto': 2.2 }
 
 /**
  * Augen-Koordinatensystem eines Kopfes, in Leinwand-Einheiten.
@@ -253,6 +259,38 @@ PLAETZE.find(p => p.id === 'begleiter').teile.push({"id": "flocki", "titel": "Fl
 PLAETZE.find(p => p.id === 'begleiter').teile.push({"id": "paeckli", "titel": "Päckli", "preis": 180, "saison": "weihnachten"})
 HINTERGRUENDE.push({"id": "winterpause", "titel": "Guetzlidose", "preis": 200, "saison": "weihnachten", "bild": true})
 
+// ── Glücksrad-Fundstücke ─────────────────────────────────────────────────────
+// Nicht käuflich: nur am Glücksrad zu finden. Die Seltenheit bestimmt, wie oft.
+export const SELTENHEIT = {
+  rare:      { name: 'Rare',     farbe: '#3679c9', gewicht: 55 },
+  episch:    { name: 'Episch',   farbe: '#8553c7', gewicht: 30 },
+  legendaer: { name: 'Legendär', farbe: '#c18a19', gewicht: 12 },
+  mythisch:  { name: 'Mythisch', farbe: '#df706e', gewicht: 3 },
+}
+const RAD_TEILE = [
+  ['kopf', 'geistesblitz', 'Geistesblitz', 'rare'],
+  ['begleiter', 'bueroklammer-karl', 'Büroklammer Karl', 'rare'],
+  ['augen', 'durchblick', 'Durchblick', 'rare'],
+  ['hg', 'gedankenknaeuel', 'Gedankenknäuel', 'rare'],
+  ['kopf', 'denkzeppelin', 'Denkblase', 'episch'],
+  ['begleiter', 'orbit-otto', 'Orbit-Otto', 'episch'],
+  ['begleiter', 'professor-plopp', 'Professor Plopp', 'episch'],
+  ['hg', 'mitternachtslabor', 'Mitternachtslabor', 'episch'],
+  ['kopf', 'synapsenkrone', 'Synapsenkrone', 'legendaer'],
+  ['begleiter', 'buecherdrache', 'Der letzte Bücherdrache', 'legendaer'],
+  ['hg', 'gedankengalaxie', 'Gedankengalaxie', 'legendaer'],
+  ['begleiter', 'geistesfunke', 'Der Geistesfunke', 'mythisch'],
+]
+for (const [platz, id, titel, rad] of RAD_TEILE) {
+  if (platz === 'hg') HINTERGRUENDE.push({ id, titel, rad, bild: true })
+  else PLAETZE.find(p => p.id === platz).teile.push({ id, titel, rad })
+}
+/** Alle Glücksrad-Teile als { platz, teil } */
+export const radTeile = () => [
+  ...PLAETZE.flatMap(p => p.teile.filter(t => t.rad).map(teil => ({ platz: p.id, teil }))),
+  ...HINTERGRUENDE.filter(t => t.rad).map(teil => ({ platz: 'hg', teil })),
+]
+
 // ── Besitz und Ausrüstung ────────────────────────────────────────────────────
 
 const KEY_BESITZ = 'zk:besitz'
@@ -294,6 +332,13 @@ export function kaufen(platzId, teilId) {
   alle.add(schluessel(platzId, teilId))
   speichere(KEY_BESITZ, [...alle])
   return true
+}
+
+/** Geschenk (Fundstück vom Glücksrad): ohne Krümel und auch ausserhalb der Saison. */
+export function schenken(platzId, teilId) {
+  const alle = getBesitz()
+  alle.add(schluessel(platzId, teilId))
+  speichere(KEY_BESITZ, [...alle])
 }
 
 export function schluessel(platzId, teilId) {
@@ -380,7 +425,7 @@ export function avatarHtml(look = getLook(), klasse = '') {
         style="left:${k.bild.links}%;top:${k.bild.oben}%;width:${k.bild.breite}%" />
       ${ebene('hals', look.hals, HALS_GEO[look.hals] ?? HALS_STANDARD, halsAnker.x, halsAnker.y, true)}
       ${ebene('augen', look.augen, BRILLEN_GEO[look.augen] ?? { widthFactor: 2.2, xOffset: 0, yOffset: 0 }, brillenAnker.x, brillenAnker.y, true)}
-      ${ebene('begleiter', look.begleiter, ["buhbert", "knurps", "flatterkeks", "kruemelmann", "flocki", "paeckli"].includes(look.begleiter) ? { ...BEGLEITER_GEO, widthFactor: 2.15 } : BEGLEITER_GEO, sys.mitteX, sys.mitteY, false)}
+      ${ebene('begleiter', look.begleiter, BEGLEITER_BREITE[look.begleiter] ? { ...BEGLEITER_GEO, widthFactor: BEGLEITER_BREITE[look.begleiter] } : BEGLEITER_GEO, sys.mitteX, sys.mitteY, false)}
       ${SHOW_ANCHORS ? ankerHtml(sys, look, halsAnker) : ''}
       </div>
     </div>

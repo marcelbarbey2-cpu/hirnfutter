@@ -6,9 +6,9 @@
   --green-l: var(--green-light); --red-l: var(--red-light);
   --accent-h: var(--accent-hover); --accent-t: var(--accent-text);
   --sh-sm: var(--shadow-sm); --sh: var(--shadow); --sh-lg: var(--shadow-lg);
-  --blue: oklch(0.55 0.14 250); --blue-l: oklch(0.93 0.04 250);
-  --vio: oklch(0.5 0.15 295); --vio-l: oklch(0.94 0.04 295);
-  --amb-l: oklch(0.94 0.05 70);
+  --blue: #1f74bf; --blue-l: #d4ebff;
+  --vio: #6b4cae; --vio-l: #ede6ff;
+  --amb-l: #ffe6c8;
 }
 .nv.screen, .nv .screen { flex: 1; }
 .nv button { font: inherit; color: inherit; border: 0; cursor: pointer; }
@@ -29,7 +29,7 @@
 .nv .x { width: 34px; height: 34px; border-radius: 10px; background: var(--surface); border: 1px solid var(--border); display: flex; align-items: center; justify-content: center; font-size: 16px; color: var(--text); padding: 0; }
 .nv .bar { height: 6px; border-radius: 99px; background: var(--surface-2); overflow: hidden; }
 .nv .bar i { display: block; height: 100%; background: var(--accent); border-radius: 99px; }
-.nv .bar.vio { background: oklch(.88 .05 295); } .nv .bar.vio i { background: var(--vio); }
+.nv .bar.vio { background: #d9d2f6; } .nv .bar.vio i { background: var(--vio); }
 
 .nv .btn { display: flex; width: 100%; align-items: center; justify-content: center; gap: 8px; height: 50px; padding: 0 16px; border-radius: 10px; background: var(--accent); color: var(--accent-t); font-weight: 800; font-size: 16px; box-shadow: var(--sh-sm); }
 .nv .btn.ghost { background: var(--surface); color: var(--text); border: 1px solid var(--border); box-shadow: none; }
@@ -41,15 +41,15 @@
 .nv .kk .t { font-family: 'Bitter', serif; font-weight: 500; font-size: 18px; line-height: 1.2; margin-bottom: 12px; }
 .nv .stapel { box-shadow: 0 3px 0 -1px var(--surface), 0 4px 0 -1px var(--border), 0 7px 0 -2px var(--surface), 0 8px 0 -2px var(--border); margin-bottom: 8px; }
 .nv .set { cursor: pointer; }
-.nv .set .t { padding-bottom: 8px; border-bottom: 1px solid oklch(.78 .07 250); margin-bottom: 10px; }
+.nv .set .t { padding-bottom: 8px; border-bottom: 1px solid #96bbe3; margin-bottom: 10px; }
 .nv .tab { position: absolute; right: 12px; top: -11px; font-size: 11px; font-weight: 800; letter-spacing: .04em; padding: 3px 9px 4px; border-radius: 6px 6px 0 0; border: 1px solid transparent; border-bottom: none; }
-.nv .tab.k { background: var(--amb-l); color: oklch(.45 .12 65); border-color: oklch(.85 .08 70); }
-.nv .tab.te { background: var(--blue-l); color: oklch(.4 .13 250); border-color: oklch(.85 .05 250); }
-.nv .tab.tu { background: var(--vio-l); color: oklch(.38 .14 295); border-color: oklch(.86 .05 295); }
+.nv .tab.k { background: var(--amb-l); color: #814300; border-color: #f0c595; }
+.nv .tab.te { background: var(--blue-l); color: #00488a; border-color: #b6d1ee; }
+.nv .tab.tu { background: var(--vio-l); color: #4a2b83; border-color: #d3cbef; }
 .nv .meta { display: flex; gap: 6px; align-items: center; font-size: 13px; font-weight: 700; color: var(--text-2); }
 .nv .dot { width: 3px; height: 3px; border-radius: 9px; background: var(--text-3); }
-.nv .tutorbox { flex: 1; background: var(--vio-l); border-color: oklch(.86 .05 295); padding: 14px; }
-.nv .serie-chip { font-size: 13px; font-weight: 700; color: oklch(.55 .16 45); background: oklch(.94 .05 60); padding: 4px 12px; border-radius: 999px; }
+.nv .tutorbox { flex: 1; background: var(--vio-l); border-color: #d3cbef; padding: 14px; }
+.nv .serie-chip { font-size: 13px; font-weight: 700; color: #b94a00; background: #ffe4ca; padding: 4px 12px; border-radius: 999px; }
 
 .nv .in { width: 100%; font: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); }
 .nv textarea.in { min-height: 90px; resize: vertical; }
@@ -75,10 +75,10 @@
 
 .nv .fb { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 10px; font-size: 15px; font-weight: 600; line-height: 1.35; }
 .nv .fb b { font-weight: 800; }
-.nv .fb.ok { background: var(--green-l); color: oklch(.38 .12 145); }
-.nv .fb.no { background: var(--red-l); color: oklch(.4 .14 25); }
-.nv .fb.near { background: var(--amb-l); color: oklch(.42 .12 65); }
-.nv mark { background: oklch(.9 .1 95); padding: 0 3px; border-radius: 3px; }
+.nv .fb.ok { background: var(--green-l); color: #005211; }
+.nv .fb.no { background: var(--red-l); color: #831a1d; }
+.nv .fb.near { background: var(--amb-l); color: #783b00; }
+.nv mark { background: #f3de90; padding: 0 3px; border-radius: 3px; }
 .nv.nv-in { display: flex; flex-direction: column; gap: 12px; margin-top: 8px; }
 
 /* Navigation wie Ordnerreiter (auch auf der Übersicht, deshalb ohne .nv) */
@@ -88,9 +88,9 @@
 
 /* Typ-Marke in der Setliste */
 .typ-tab { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .04em; padding: 1px 6px; border-radius: 5px; vertical-align: 2px; margin-right: 4px; }
-.typ-karten { background: oklch(0.94 0.05 70); color: oklch(.45 .12 65); }
-.typ-blatt, .typ-test { background: oklch(0.93 0.04 250); color: oklch(.4 .13 250); }
-.typ-tutor { background: oklch(0.94 0.04 295); color: oklch(.38 .14 295); }
+.typ-karten { background: #ffe6c8; color: #814300; }
+.typ-blatt, .typ-test { background: #d4ebff; color: #00488a; }
+.typ-tutor { background: #ede6ff; color: #4a2b83; }
 
 /* Arbeitsblatt */
 .nv .bl-seite { padding: 8px 20px 30px; font-family: 'Bitter', Georgia, serif; color: #000; }
@@ -107,7 +107,7 @@
 .nv .bl-linie { display: inline-block; border-bottom: 1px solid #000; height: 1.3em; vertical-align: baseline; min-width: 2em; }
 .nv .bl-item > .bl-linie { display: block; margin-top: 14px; }
 .nv .bl-luecke { display: inline-block; min-width: 3.6em; border-bottom: 1px solid #000; text-align: center; font-size: 13px; margin: 0 4px; font-family: 'Nunito', sans-serif; }
-.nv .bl-loes { margin-top: 6px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; color: oklch(.38 .12 145); }
+.nv .bl-loes { margin-top: 6px; font-family: 'Nunito', sans-serif; font-size: 15px; font-weight: 700; color: #005211; }
 .nv .bl-wahl { display: flex; flex-wrap: wrap; gap: 8px; }
 @media print {
   .no-print { display: none !important; }
@@ -199,7 +199,7 @@
 .nv .vorschau-liste{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;padding:2px}
 .nv .kk.vorschau{position:relative;padding-right:44px}
 .nv .vs-x{position:absolute;right:2px;top:2px;width:42px;height:42px;border:0;background:none;font-size:15px;font-weight:800;color:var(--text-2)}
-.fehler-knopf{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:12px;padding:14px 16px;margin-bottom:14px;border:1px solid oklch(.85 .05 250);border-bottom-width:3px;border-radius:14px;background:var(--blue-l,#e6f0fb);color:inherit;font:inherit;font-size:15px;min-height:56px}
+.fehler-knopf{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:12px;padding:14px 16px;margin-bottom:14px;border:1px solid #b6d1ee;border-bottom-width:3px;border-radius:14px;background:var(--blue-l,#e6f0fb);color:inherit;font:inherit;font-size:15px;min-height:56px}
 .fehler-knopf small{font-size:13px;font-weight:600;opacity:.75}
 .fehler-pfeil{font-size:22px;font-weight:800}
 .kw-aktiv{position:sticky;top:0;z-index:2;background:#fff6e8;border:1px solid #e3c896;border-radius:8px;padding:6px 10px;font-size:14px;font-weight:700;margin-bottom:6px}
@@ -215,10 +215,10 @@
 /* Knöpfe überall gleich: gross, fett, mit Boden */
 .set-screen .btn, .summary-screen .btn, .home-screen .empty-state .btn, .study-screen .btn-reveal, .study-screen .tipp-form .btn {
   min-height: 50px; padding: 0 18px; border-radius: 12px; font-size: 16px; font-weight: 800; }
-.btn-study, .btn-primary, .nv .btn { border-bottom: 3px solid oklch(0.55 0.13 62); }
+.btn-study, .btn-primary, .nv .btn { border-bottom: 3px solid #a65d00; }
 .nv .btn { border-radius: 12px; }
-.nv .btn.blue { border-bottom-color: oklch(0.45 0.14 250); }
-.nv .btn.vio { border-bottom-color: oklch(0.4 0.15 295); }
+.nv .btn.blue { border-bottom-color: #00569f; }
+.nv .btn.vio { border-bottom-color: #502e8e; }
 .nv .btn.ghost, .btn-study-all { background: var(--surface); color: var(--text); border: 1px solid var(--border); border-bottom-width: 3px; }
 .btn-study.btn-disabled { border-bottom-color: var(--border); }
 .btn.gross { width: 100%; min-height: 56px; font-size: 18px; }
@@ -242,7 +242,7 @@
 h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--text-2); }
 .set-row { border-radius: 14px; padding-top: 14px; padding-bottom: 14px; } /* die Art zeigt das Etikett, kein farbiger Streifen */
 .set-row-name { font-family: 'Bitter', Georgia, serif; font-size: 18px; font-weight: 600; white-space: normal; }
-.alles-gut { margin: 14px 4px 0; padding: 12px 14px; border-radius: 12px; background: var(--green-light); color: oklch(0.35 0.1 145); font-weight: 700; font-size: 15px; }
+.alles-gut { margin: 14px 4px 0; padding: 12px 14px; border-radius: 12px; background: var(--green-light); color: #0c4714; font-weight: 700; font-size: 15px; }
 .fehler-knopf { cursor: pointer; }
 
 /* Set-Seite */
@@ -325,7 +325,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .nv .lp-umben .in{height:38px;font-size:15px}
 .nv .lp-neu{display:flex;flex-direction:column;gap:8px}
 .nv .lp-pub{background:var(--surface);border:1px solid var(--border);border-radius:12px;padding:12px 14px;display:flex;flex-direction:column;gap:8px}
-.nv .lp-pub.ist{background:color-mix(in oklch, var(--green-light) 45%, var(--surface));border-color:color-mix(in oklch, var(--green) 30%, var(--border))}
+.nv .lp-pub.ist{background:#e9f7e5;border-color:#aebea0}
 .nv .lp-pub-akt{display:flex;flex-wrap:wrap;gap:8px}
 .nv .lp-wahl{flex:1;min-width:160px;height:44px}
 .nv .lp-btn{height:44px;padding:0 16px;font-size:15px}
@@ -357,7 +357,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .nv .lp-fach>summary span:first-of-type{flex:1}
 .nv .lp-fach>.bib-fach-lbl{background:var(--surface-2)}
 .nv .lp-fach>.lp-pub{border:0;border-top:1px solid var(--border);border-radius:0}
-.nv .lp-fach>.lp-pub.ist{background:color-mix(in oklch, var(--green-light) 45%, var(--surface))}
+.nv .lp-fach>.lp-pub.ist{background:#e9f7e5}
 .nv .lp-offen{font-size:13px;font-weight:800;color:#a8600a;background:#fff6e8;border:1px solid #e3c896;border-radius:999px;padding:2px 8px}
 .nv .lp-fokus{background:#fff6e8;border:1px solid #e3c896;border-radius:14px;padding:10px;display:flex;flex-direction:column;gap:6px}
 .nv .lnk.lp-gefahr{color:#b03a2e}
@@ -434,8 +434,8 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 /* Zwei Knöpfe nebeneinander (z. B. «Thema oder Text» / «Ich habe ein Foto»): umbrechen statt überlaufen */
 .nv .zwei > .btn { min-width: 0; white-space: normal; line-height: 1.15; padding: 0 10px; font-size: 15px; height: auto; min-height: 50px; }
 /* Fünf Reiter (Lehrpersonen): etwas enger, damit «Bibliothek» ganz Platz hat */
-.reiter:has(> :nth-child(5)) { gap: 4px; padding-left: 8px; padding-right: 8px; }
-.reiter:has(> :nth-child(5)) .reiter-knopf { font-size: 11.5px; letter-spacing: -0.01em; padding-left: 1px; padding-right: 1px; }
+.reiter.fuenf { gap: 4px; padding-left: 8px; padding-right: 8px; }
+.reiter.fuenf .reiter-knopf { font-size: 11.5px; letter-spacing: -0.01em; padding-left: 1px; padding-right: 1px; }
 
 /* Shop: gut sichtbarer Knopf direkt unter dem Hirn auf dem Start */
 .futter-links { flex: none; display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 76px; }
@@ -448,8 +448,8 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 
 /* ── Computer: eine ruhige Spalte in der Mitte statt voller Breite ── */
 @media (min-width: 700px) {
-  html, body { background: oklch(0.935 0.016 75); }
-  #app { max-width: 640px; margin: 0 auto; background: var(--bg); box-shadow: 0 0 0 1px var(--border), 0 12px 40px oklch(0.3 0.03 75 / 0.08); }
+  html, body { background: #f0e8de; }
+  #app { max-width: 640px; margin: 0 auto; background: var(--bg); box-shadow: 0 0 0 1px var(--border), 0 12px 40px rgba(55,44,29,0.08); }
 }
 @media print { #app { box-shadow: none !important; } }
 
@@ -487,11 +487,124 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 
 /* Shop in der Kopfzeile: rechts, mit Krümelstand */
 .kopf-shop { display: inline-flex; align-items: center; gap: 6px; height: 40px; padding: 0 16px 0 12px; border-radius: 99px;
-  border: 1px solid color-mix(in oklch, var(--accent) 45%, var(--border)); background: color-mix(in oklch, var(--accent) 12%, var(--surface));
+  border: 1px solid #dbb289; background: #fbefe2;
   color: var(--text); font: inherit; font-size: 15px; font-weight: 800; cursor: pointer; transition: background .15s, transform .1s; }
-.kopf-shop:hover { background: color-mix(in oklch, var(--accent) 22%, var(--surface)); }
+.kopf-shop:hover { background: #f7e2cf; }
 .kopf-shop:active { transform: translateY(1px); }
 .kopf-shop .sym { margin: 0; width: 18px; height: 18px; color: var(--accent-hover); }
 .kopf-kruemel { min-width: 28px; height: 28px; padding: 0 8px; border-radius: 99px; display: inline-grid; place-items: center;
   background: var(--accent); color: var(--surface); font-size: 13px; font-variant-numeric: tabular-nums; }
 .kopf-shop:focus-visible { outline: 3px solid var(--accent); outline-offset: 2px; }
+
+/* Verwaltung: Sets einer Klasse unter «Alle Klassen» */
+.nv .lp-vk-sets { flex-basis: 100%; margin-top: 4px; }
+.nv .lp-vsets { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
+
+/* Erstellen mit Foto */
+.nv .foto-bereich { display: flex; flex-direction: column; gap: 10px; }
+.nv .foto-hinweis { font-size: 13px; font-weight: 600; color: var(--text-2); line-height: 1.4; }
+.nv .foto-vorschau { display: flex; gap: 12px; align-items: center; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
+.nv .foto-vorschau img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; flex: none; background: var(--surface-2); }
+.nv .foto-vorschau.klein img { width: 64px; height: 64px; }
+.nv .foto-akt { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
+
+/* Einstellung «KI-App auf diesem Handy» */
+.nv .kiapp-wahl { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
+  font-size: 13px; font-weight: 600; color: var(--text-2); line-height: 1.4; cursor: pointer; }
+.nv .kiapp-wahl b { color: var(--text); font-size: 15px; }
+.nv .kiapp-wahl input { width: 22px; height: 22px; margin-top: 1px; flex: none; accent-color: var(--accent-hover); }
+
+/* Vorlesen */
+.card-face, .card-tipp { position: relative; }
+.card-back { position: absolute; }
+.vorlesen-knopf { position: absolute; top: 12px; right: 12px; width: 44px; height: 44px; border-radius: 50%; display: grid; place-items: center;
+  border: 1px solid #dfd6cb; background: #fffdfa; color: #62594f; cursor: pointer; padding: 0; }
+.vorlesen-knopf:hover { color: #be7100; border-color: #d28425; }
+.vorlesen-knopf .sym { width: 22px; height: 22px; margin: 0; }
+.vorlesen-knopf.spricht { background: #d28425; border-color: #d28425; color: #fffdfa; }
+@media (prefers-reduced-motion: no-preference) { .vorlesen-knopf.spricht .sym { animation: vorlesen-puls 1s ease-in-out infinite; } }
+@keyframes vorlesen-puls { 50% { transform: scale(1.12); } }
+
+/* Glücksrad: ruhige Lernbelohnung, mit gut lesbaren Feldern und sichtbarem Fundstück. */
+.rad { display: flex; flex-direction: column; align-items: center; gap: 16px; padding: 26px 20px 20px; margin: 18px 0; border: 1px solid #dfd6cb; border-radius: 24px; background: #fffdfa; text-align: center; box-shadow: 0 4px 16px rgba(65,44,15,.04); }
+.rad-text { max-width: 350px; }
+.rad-kicker { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 12px; line-height: 1.4; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #506747; }
+.rad-check { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #e8efdf; border-radius: 50%; }
+.rad-check svg { width: 18px; height: 18px; }
+.rad .rad-titel { margin: 8px 0 0; font-family: 'Bitter', Georgia, serif; font-size: 26px; line-height: 1.25; font-weight: 500; text-transform: none; letter-spacing: -.02em; color: #292014; }
+.rad-sub { font-size: 14px; line-height: 1.5; font-weight: 600; color: #62594f; margin-top: 8px; }
+.rad-buehne { position: relative; width: 264px; height: 264px; max-width: 100%; flex: none; margin-top: 2px; }
+.rad-buehne::after { content: ''; position: absolute; width: 64%; height: 15px; left: 18%; bottom: -5px; border-radius: 50%; background: rgba(96,65,25,.1); filter: blur(7px); z-index: 0; }
+.rad-dreh { position: relative; z-index: 1; overflow: hidden; border-radius: 50%; }
+.rad-dreh, .rad-scheibe { width: 100%; height: 100%; display: block; }
+.rad-scheibe { overflow: visible; transform-origin: 50% 50%; }
+.rad-feld { stroke: #d5b788; stroke-width: 1.3; }
+.rad-beschriftung { transform-origin: 0 0; }
+.rad-zahl { font-family: 'Nunito', system-ui, sans-serif; font-size: 27px; font-weight: 800; text-anchor: middle; fill: #473523; }
+.rad-fund-text { font-family: 'Nunito', system-ui, sans-serif; font-size: 11px; font-weight: 800; text-anchor: middle; fill: #654297; }
+.rad-zeiger { position: absolute; top: -6px; left: 50%; width: 24px; height: 30px; transform: translateX(-50%); z-index: 3; }
+.rad-zeiger::before { content: ''; position: absolute; left: 0; top: 7px; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 23px solid #473523; }
+.rad-zeiger::after { content: ''; position: absolute; width: 9px; height: 9px; border: 2px solid #fffdfa; background: #d99b42; border-radius: 50%; top: 2px; left: 7.5px; }
+.rad-nabe { position: absolute; z-index: 2; left: 50%; top: 50%; width: 70px; height: 70px; transform: translate(-50%,-50%); display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #fffdfa; border: 3px solid #c89955; box-shadow: 0 2px 5px rgba(65,44,15,.14); }
+.rad-nabe img { display: block; width: 56px; height: 48px; object-fit: contain; }
+.rad-legende { display: flex; justify-content: center; gap: 20px; font-size: 12px; font-weight: 700; color: #62594f; }
+.rad-legende>span { display: inline-flex; align-items: center; gap: 5px; }
+.rad-legende-icon { display: inline-flex; width: 18px; height: 18px; color: #9a6a2c; }
+.rad-legende-icon svg { width: 100%; height: 100%; }
+.rad-legende-fund { color: #7857a2; }
+.rad .btn.rad-knopf { width: 100%; max-width: 300px; min-height: 50px; background: #cb851f; color: #fffdfa; border: 1px solid #a56a18; border-bottom-width: 3px; border-radius: 12px; font: 800 16px/1.2 'Nunito', system-ui, sans-serif; box-shadow: 0 2px 3px rgba(65,44,15,.08); }
+.rad .btn.rad-knopf:hover:not(:disabled) { background: #b67518; }
+.rad .btn.rad-knopf:disabled { opacity: 1; background: #f0e7d8; border-color: #d9c9ae; color: #76664f; cursor: default; }
+.rad-knopf:focus-visible, .rad-shop-knopf:focus-visible { outline: 3px solid #8553c7; outline-offset: 4px; }
+.rad-hinweis { font-size: 12px; font-weight: 600; line-height: 1.4; color: #716758; margin-top: -6px; }
+.rad-ergebnis[hidden] { display: none; }
+.rad-ergebnis { width: 100%; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 16px; border: 1px solid #e3d3b8; border-radius: 16px; background: #faf2e3; text-align: left; }
+.rad-ergebnis:focus { outline: none; }
+.rad-gewinn-text { min-width: 0; }
+.rad .rad-gewinn-titel { font-family: 'Bitter', Georgia, serif; font-size: 24px; font-weight: 500; line-height: 1.25; color: #292014; overflow-wrap: anywhere; margin: 0; }
+.rad-gewinn-sub { font-size: 13px; font-weight: 600; line-height: 1.45; color: #62594f; margin-top: 5px; }
+.rad-kruemel-icon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: #f5dfb5; color: #a36b20; }
+.rad-kruemel-icon svg { width: 30px; height: 30px; }
+.rad-ergebnis.rad-fund { --fund-farbe: #8553c7; display: grid; grid-template-columns: 82px minmax(0,1fr); align-items: center; gap: 12px; border-color: var(--fund-farbe); background: #fffcf7; }
+.rad-fund-vorschau { display: flex; align-items: center; justify-content: center; padding: 4px; width: 82px; height: 90px; border-radius: 12px; background: #f3ede4; }
+.rad-fund-bild { display: block; width: 100%; height: 100%; object-fit: contain; }
+.rad-fund .rad-gewinn-titel { font-size: 20px; margin-top: 6px; }
+.rad-ergebnis .s-rare.selten-marke { background: #2b65aa; }
+.rad-ergebnis .s-legendaer.selten-marke { background: #f5e6bd; color: #6d4a0e; }
+.rad-ergebnis .s-mythisch.selten-marke { background: #f4dfea; color: #713361; animation: none; }
+.rad-gewinn-label { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #62594f; }
+.rad-shop-knopf { grid-column: 1 / -1; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 10px; border: 1px solid #d9cdbb; background: #fffdfa; color: #473523; font: 800 14px/1.4 'Nunito', system-ui, sans-serif; cursor: pointer; }
+.rad-shop-knopf:hover { background: #f3ede4; }
+@media (max-width: 360px) { .rad { padding: 22px 14px 18px; } .rad-buehne { width: 232px; height: 232px; } .rad .rad-titel { font-size: 23px; } }
+@media (prefers-reduced-motion: no-preference) { .rad.fertig .rad-ergebnis { animation: rad-auftauchen .25s ease-out both; } }
+@keyframes rad-auftauchen { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
+
+/* Seltenheit (Glücksrad-Teile): farbige Marke und Rahmen */
+.selten-marke { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #fffdfa; vertical-align: 1px; }
+.s-rare.selten-marke { background: #3679c9; }
+.s-episch.selten-marke { background: #8553c7; }
+.s-legendaer.selten-marke { background: #c18a19; }
+.s-mythisch.selten-marke { background: linear-gradient(110deg, #df706e, #f2a97e, #c98bd8, #7fc4d8, #df706e); background-size: 300% 100%; }
+.laden-kachel.selten { border-width: 2px; }
+.laden-kachel.s-rare { border-color: #3679c9; }
+.laden-kachel.s-episch { border-color: #8553c7; }
+.laden-kachel.s-legendaer { border-color: #c18a19; }
+.laden-kachel.s-mythisch { border-color: #df706e; box-shadow: 0 0 0 1px #f2a97e inset; }
+.laden-kachel.selten.laden-gesperrt { opacity: 1; } /* Marke bleibt kräftig, nur Bild und Text treten zurück */
+.laden-kachel.selten.laden-gesperrt .laden-vorschau, .laden-kachel.selten.laden-gesperrt .laden-titel, .laden-kachel.selten.laden-gesperrt .laden-preis { opacity: .55; }
+.rad-ergebnis .selten-marke { margin-right: 4px; }
+/* Mythisch schimmert ruhig – nur wer Bewegung zulässt */
+@media (prefers-reduced-motion: no-preference) {
+  .s-mythisch.selten-marke { animation: schillern 6s linear infinite; }
+}
+@keyframes schillern { to { background-position: 300% 0; } }
+
+/* Glücksrad: auf der Auswertung ohne eigenen Rahmen (sie ist schon eine Karte), auf dem Start etwas kleiner */
+.rad.eingebettet { border: 0; background: none; box-shadow: none; padding: 4px 0 0; margin: 6px 0 4px; gap: 14px; }
+.rad-sub-eingebettet { margin-top: 0; font-size: 15px; }
+.rad.eingebettet .rad-ergebnis { background: #fffdfa; }
+.rad:not(.eingebettet) { gap: 12px; padding: 20px 16px 18px; }
+.rad:not(.eingebettet) .rad-titel { font-size: 22px; margin-top: 6px; }
+.rad:not(.eingebettet) .rad-buehne { width: 220px; height: 220px; }
+.rad-nabe { overflow: hidden; }
+.rad-nabe .avatar.rad-nabe-hirn { width: 62px; border-radius: 0; background: none !important; flex: none; }

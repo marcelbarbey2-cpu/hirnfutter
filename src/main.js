@@ -21,7 +21,7 @@ import {
 } from './storage.js'
 import {
   PLAETZE, HINTERGRUENDE, getBesitz, besitzt, kaufen, schluessel,
-  getLook, setLook, avatarHtml, teilVorschauHtml, BEDINGUNGEN, verdient,
+  getLook, setLook, avatarHtml, teilVorschauHtml, BEDINGUNGEN, verdient, SELTENHEIT,
 } from './shop.js'
 import {
   today, getDueCards, getAllCardsSorted, getDeckStats, nextBox, ROUND_SIZE,
@@ -41,6 +41,8 @@ import { renderSatz } from './blatt.js'
 import { alleAbgleichen, serverBereit, getLehrercode, anzeigeName } from './klassen.js'
 import { klassencodeDialog, renderLehrer } from './ansicht-klassen.js'
 import { sym } from './symbole.js'
+import { radEinbauen, heuteGedreht } from './rad.js'
+import { kannVorlesen, vorlesen, spracheRaten, stopp as vorlesenStopp } from './vorlesen.js'
 import { updateLibSet } from './bibliothek.js'
 
 // ── Sets kommen als Link ─────────────────────────────────────────────────────
@@ -166,6 +168,7 @@ function render() {
   }
   else if (state.view === 'bibliothek') renderBibliothek(root, hooksBib)
   else if (state.view === 'lehrer') renderLehrer(root, hooksLehrer)
+  if (state.view === 'home' || state.view === 'summary') radZeigen()
   mathFuellen(root)
 }
 
@@ -175,7 +178,7 @@ const NAV = [['home', 'Üben', 'ueben'], ['erstellen', 'Erstellen', 'erstellen']
 const navListe = () => serverBereit() && getLehrercode() ? [...NAV, ['lehrer', 'Klassen', 'klassen']] : NAV
 
 function navHtml(aktiv) {
-  return `<nav class="reiter" aria-label="Bereiche">${navListe().map(([id, name, icon]) =>
+  return `<nav class="reiter${navListe().length > 4 ? ' fuenf' : ''}" aria-label="Bereiche">${navListe().map(([id, name, icon]) =>
     `<button class="reiter-knopf${id === aktiv ? ' on' : ''}" data-action="nav" data-ziel="${id}"${id === aktiv ? ' aria-current="page"' : ''}>${sym(icon)}<span>${name}</span></button>`).join('')}</nav>`
 }
 function navEl(aktiv) {
@@ -408,6 +411,7 @@ function renderHome() {
 
       <main class="home-main">
         ${alle.length === 0 ? '' : futterLeiste()}
+        ${alle.length === 0 ? '' : '<div id="rad-platz"></div>'}
         ${alle.length === 0 ? renderEmptyState() : !eintraege.length ? `
           <div class="alles-gut">Alle deine Sets sind vom Start genommen.</div>
           <button class="sammlung-link" style="background:none;border:0;width:100%" data-action="nav" data-ziel="bibliothek">Zur Bibliothek: dort kannst du sie wieder aufnehmen →</button>
@@ -580,7 +584,7 @@ function renderSet() {
 function renderBoxBar(boxCounts, total) {
   if (total === 0) return ''
   // Stufe 1 ist neutral (noch nichts gelernt ist kein Fehler), dann Bernstein, dann Grün: alles aus der Palette.
-  const colors = ['', 'oklch(0.86 0.02 75)', 'oklch(0.86 0.07 78)', 'oklch(0.76 0.12 70)', 'oklch(0.74 0.1 145)', 'oklch(0.55 0.13 145)']
+  const colors = ['', '#d9cfc3', '#ebcc9d', '#e2a355', '#82bc83', '#38853e']
   const segs = [1, 2, 3, 4, 5].map(box => {
     const pct = ((boxCounts[box] || 0) / total * 100).toFixed(1)
     if (Number(pct) === 0) return ''
@@ -629,7 +633,13 @@ function reaktionHolen() {
   return r
 }
 
+/** Lautsprecher-Knopf für eine Kartenseite. `seite` ist die Seite der Originalkarte (für die Spracherkennung). */
+function vorleseKnopf(wo) {
+  return kannVorlesen() ? `<button class="vorlesen-knopf" data-vorlesen="${wo}" aria-label="Vorlesen" title="Vorlesen">${sym('lautsprecher')}</button>` : ''
+}
+
 function renderStudy() {
+  vorlesenStopp() // nichts weiterreden lassen, wenn die nächste Karte kommt
   const { deck, queue, queueIdx, flipped } = state
   if (queueIdx >= queue.length) { navigate('summary'); return }
 
@@ -661,6 +671,7 @@ function renderStudy() {
         <div class="card-scene" id="card-scene">
           <div class="card-flip ${flipped ? 'is-flipped' : ''}" id="card-flip">
             <div class="card-face card-front">
+              ${vorleseKnopf('front')}
               <div class="card-content">
                 <div class="card-face-label">Frage</div>
                 <div class="card-text">${renderMarkdown(card.front)}</div>
@@ -668,6 +679,7 @@ function renderStudy() {
               <button class="btn btn-reveal" id="reveal-btn">Antwort zeigen</button>
             </div>
             <div class="card-face card-back">
+              ${vorleseKnopf('back')}
               <div class="card-content">
                 <div class="card-face-label">Antwort</div>
                 <div class="card-text">${renderMarkdown(card.back)}</div>
@@ -686,6 +698,14 @@ function renderStudy() {
       </main>
     </div>
   `
+
+  // Vorlesen: die Sprache nach dem Text, sonst nach der Seite (vorne Fremdsprache, hinten Deutsch)
+  document.querySelectorAll('[data-vorlesen]').forEach(k => k.addEventListener('click', e => {
+    e.stopPropagation()
+    const vorne = k.dataset.vorlesen === 'front'
+    const original = vorne !== !!settings.reversed ? 'front' : 'back' // bei «umgedreht» zeigt vorne die Rückseite
+    vorlesen(vorne ? card.front : card.back, spracheRaten(vorne ? card.front : card.back, raw.fach || deck.fach, original), k) // «Meine Fehler»: Fach der Karte
+  }))
 
   if (settings.tippen) { verdrahteTippen(card); return }
 
@@ -747,6 +767,7 @@ function tippAnsicht(card) {
     return `
       <div class="card-scene">
         <div class="card-tipp">
+          ${vorleseKnopf('front')}
           <div class="card-content">
             <div class="card-face-label">Frage</div>
             <div class="card-text">${renderMarkdown(card.front)}</div>
@@ -856,6 +877,23 @@ function gradeCard(grade) {
   render()
 }
 
+/** Glücksrad: einmal pro Tag, wenn heute geübt wurde und nichts mehr fällig ist. */
+function radBereit() {
+  return !heuteGedreht() && (getTage()[today()] || 0) > 0 && nichtsMehrFaellig()
+}
+function radZeigen() {
+  const platz = document.getElementById('rad-platz')
+  if (!platz) return
+  if (!radBereit()) { platz.remove(); return }
+  // Auf dem Start sagt der Kopf des Rads schon «Für heute alles gefüttert»: die grüne Meldung nicht doppelt zeigen
+  if (state.view === 'home') document.querySelectorAll('.home-main .alles-gut').forEach(e => { e.hidden = true })
+  radEinbauen(platz, () => {
+    // Krümel-Anzeigen auf der Seite nachführen, ohne das Rad neu zu zeichnen
+    const n = getKruemel().total.toLocaleString('de-CH')
+    document.querySelectorAll('.futter-zahl').forEach(e => { e.textContent = n + ' Krümel' })
+  }, { eingebettet: state.view === 'summary' })
+}
+
 /** Ist über alle gemerkten Sets nichts mehr fällig? Trägt die Serie an ruhigen Tagen. */
 function nichtsMehrFaellig() {
   return alleDecks().every(deck => getDeckStats(deck, getProgress(deck.name)).dueCount === 0)
@@ -951,6 +989,7 @@ function renderSummary() {
         ${state.ausbeute > 0
           ? `<div class="summary-kruemel">+${state.ausbeute} Krümel</div>`
           : `<div class="summary-kruemel summary-kruemel-leer">Keine neuen Krümel — die kommen, wenn die Karten wieder dran sind.</div>`}
+        <div id="rad-platz"></div>
         ${state.serieBonus?.neueMarke
           ? `<div class="summary-serie">🔥 ${state.serieBonus.neueMarke} Tage in Folge — Bonus: +${state.serieBonus.bonus} Krümel</div>`
           : ''}
@@ -987,13 +1026,14 @@ function renderLaden() {
 
   const kachel = (platzId, teil, aktivId, bild) => {
     const istAuszeichnung = !!teil.bedingung
+    const sel = teil.rad && SELTENHEIT[teil.rad] // Glücksrad-Teil: nicht käuflich
     const freigeschaltet  = istAuszeichnung ? verdient(teil, stand) : null
     const hat = istAuszeichnung
       ? freigeschaltet
       : teil.preis === 0 || besitz.has(schluessel(platzId, teil.id))
     const traegt = (aktivId ?? null) === (teil.id ?? null)
     const zustand = traegt ? 'traegt' : hat ? 'hat'
-      : istAuszeichnung ? 'gesperrt'
+      : istAuszeichnung || sel ? 'gesperrt'
       : total >= teil.preis ? 'kaufbar' : 'zuteuer'
     const fuss = traegt ? '<span class="laden-marke">getragen</span>'
       : istAuszeichnung
@@ -1001,13 +1041,15 @@ function renderLaden() {
             ? '<span class="laden-marke">verdient</span>'
             : `<span class="laden-bedingung">${escHtml(BEDINGUNGEN[teil.bedingung].text)}</span>`)
       : hat ? '<span class="laden-marke laden-marke-still">im Besitz</span>'
+      : sel ? '<span class="laden-bedingung">Nur am Glücksrad</span>'
       : `${teil.preis} Krümel`
     return `
-      <button class="laden-kachel laden-${zustand}"
+      <button class="laden-kachel laden-${zustand}${sel ? ' selten s-' + teil.rad : ''}"
         data-action="laden-tipp" data-platz="${platzId}" data-teil="${teil.id ?? ''}"
         ${zustand === 'zuteuer' || zustand === 'gesperrt' ? 'aria-disabled="true"' : ''}>
         <div class="laden-vorschau">${bild}</div>
         <div class="laden-titel">${escHtml(teil.titel)}</div>
+        ${sel ? `<span class="selten-marke s-${teil.rad}">${sel.name}</span>` : ''}
         <div class="laden-preis">${fuss}</div>${teil.saison ? `<small>${SAISONEN[teil.saison].titel} · ${SAISONEN[teil.saison].zeitraum}</small>` : ''}
       </button>
     `
@@ -1063,6 +1105,11 @@ function ladenTipp(platzId, teilRoh) {
   if (teil.bedingung) {
     if (verdient(teil, auszeichnungsStand())) { setLook(feld, teilId); render() }
     else showToast(`«${teil.titel}» gibt es nicht zu kaufen: ${BEDINGUNGEN[teil.bedingung].text}.`)
+    return
+  }
+
+  if (teil.rad && !getBesitz().has(schluessel(platzId, teilId))) {
+    showToast(`«${teil.titel}» gibt es nur am Glücksrad (${SELTENHEIT[teil.rad].name}). Füttere alles Fällige, dann darfst du drehen.`)
     return
   }
 
@@ -1240,6 +1287,7 @@ function showHilfe() {
         ${punkt('Fällig', 'Je höher die Stufe, desto länger die Pause bis zum nächsten Mal. «Fällig» heisst: Heute ist diese Karte wieder dran. Ist nichts fällig, hast du für heute alles gemacht.')}
         ${punkt('Sitzt', 'Eine Karte «sitzt», wenn sie auf Stufe 4 oder 5 liegt. Du hast sie also mehrmals richtig gewusst, mit Pausen dazwischen. Darum bringt es mehr, jeden Tag kurz zu üben als einmal lang.')}
         ${punkt('Krümel', 'Krümel bekommst du, wenn eine fällige Karte eine Stufe aufsteigt. Im Shop tauschst du sie gegen Sachen für dein Hirn. Wer zusätzlich übt, lernt mehr, bekommt dafür aber keine Krümel.')}
+        ${punkt('Glücksrad', 'Hast du heute alles Fällige gefüttert, darfst du einmal am Rad drehen. Gratis, und jedes Feld gewinnt: ein paar Krümel oder selten ein Fundstück für den Shop.')}
         ${punkt('Üben und Blatt', 'Bei «Üben» kommt eine Aufgabe nach der anderen. «Blatt» zeigt alle Aufgaben wie eine Prüfung: ausfüllen, auswerten, auf Wunsch drucken.')}
         ${punkt('Prüfung', 'Trag auf der Seite eines Sets das Datum der Prüfung ein. Dann steht das Set auf dem Start zuoberst. Nach der Prüfung nimmst du es vom Start.')}
         ${punkt('Deine Daten', 'Alles liegt nur auf diesem Gerät. In der Bibliothek unter «Daten sichern» lädst du eine Sicherung herunter, zum Beispiel vor einem Handywechsel.')}

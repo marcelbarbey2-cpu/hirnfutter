@@ -14,7 +14,7 @@
 //   lehrerliste    → [lpId]                                 für die Verwaltung
 // Gelöschtes wird mit Ablaufzeit (30 Tage) neu geschrieben: der Papierkorb räumt sich selbst auf.
 
-const VERSION = '2026-11-15c' // muss zu SERVER_VERSION in src/server-adresse.js passen
+const VERSION = '2026-11-17' // muss zu SERVER_VERSION in src/server-adresse.js passen
 const ZEICHEN = '23456789ABCDEFGHJKMNPQRSTUVWXYZ' // ohne 0/O, 1/I/L
 const PAPIERKORB_TAGE = 30
 const MAX_SET_BYTES = 300_000
@@ -92,6 +92,11 @@ async function route(req, env) {
       if (m === 'DELETE' && id && !aktion) return json(await lehrerLoeschen(env, id))
     }
     if (was === 'klasse' && m === 'POST' && aktion === 'uebergeben') return json(await klasseUebergeben(env, normCode(id), await body(req)))
+    // Notfall-Recht der Verwaltung: Sets anderer Lehrpersonen in einer Klasse ansehen, ausblenden, entfernen, löschen
+    if (was === 'klasse' && m === 'GET' && id && !aktion) return json(await verwKlasse(env, normCode(id)))
+    if (was === 'klasse' && m === 'POST' && aktion === 'set' && teile[4] && teile[5]) return json(await verwKlasseSet(env, normCode(id), teile[4], teile[5]))
+    if (was === 'set' && m === 'DELETE' && id && !aktion) return json(await verwSetLoeschen(env, id, true))
+    if (was === 'set' && m === 'POST' && id && aktion === 'wiederherstellen') return json(await verwSetLoeschen(env, id, false))
   }
   throw new Fehler(404, 'Unbekannte Adresse')
 }
@@ -385,6 +390,44 @@ async function lehrerListe(env) {
   }
   return { lehrer: out }
 }
+/** Verwaltung: eine Klasse mit allen Sets aller Lehrpersonen. */
+async function verwKlasse(env, code) {
+  const k = klasseNorm(await get(env, 'kl:' + code))
+  if (!k) throw new Fehler(404, 'Klasse nicht gefunden')
+  const n = await namen(env, k.sets.map(e => e.lp))
+  const sets = []
+  for (const e of k.sets) {
+    const s = await get(env, 'set:' + e.id) // aktueller Stand, auch ob es im Papierkorb liegt
+    const meta = s ? setMeta(s) : e.meta
+    if (meta) sets.push({ ...meta, id: e.id, lp: e.lp, von: n[e.lp] || '', sichtbar: !!e.sichtbar, geloescht: !!(s ? s.geloescht : meta.geloescht) })
+  }
+  return { code: k.code, name: k.name, sets }
+}
+/** Verwaltung: ein Set in einer Klasse ausblenden, wieder zeigen oder aus der Klasse nehmen – egal, wem es gehört. */
+async function verwKlasseSet(env, code, setId, tat) {
+  const k = klasseNorm(await get(env, 'kl:' + code))
+  if (!k) throw new Fehler(404, 'Klasse nicht gefunden')
+  const id = text(setId, 20)
+  if (!k.sets.some(e => e.id === id)) throw new Fehler(404, 'Set nicht in dieser Klasse')
+  if (tat === 'ausblenden' || tat === 'zeigen') k.sets = k.sets.map(e => e.id === id ? { ...e, sichtbar: tat === 'zeigen' } : e)
+  else if (tat === 'entfernen') k.sets = k.sets.filter(e => e.id !== id)
+  else throw new Fehler(400, 'Unbekannte Aktion')
+  k.geaendert = jetzt()
+  await put(env, 'kl:' + code, k, k.geloescht ? ablauf : undefined)
+  return verwKlasse(env, code)
+}
+/** Verwaltung: ein Set löschen (30 Tage Papierkorb) oder wiederherstellen. Die Lehrperson sieht es in ihrem Papierkorb. */
+async function verwSetLoeschen(env, setId, loeschen) {
+  const id = text(setId, 20)
+  const s = await get(env, 'set:' + id)
+  if (!s) throw new Fehler(404, 'Set nicht gefunden')
+  s.geloescht = loeschen ? jetzt() : null
+  if (!loeschen) s.geaendert = jetzt()
+  await put(env, 'set:' + id, s, loeschen ? ablauf : undefined)
+  await metaVerteilen(env, { id: s.lp }, s) // in allen Klassen der Besitzerin nachführen
+  return setMeta(s)
+}
+
 /** Die Leitung einer Klasse an eine andere Lehrperson geben, die schon dabei ist (oder dazukommt). */
 async function klasseUebergeben(env, code, b) {
   const k = klasseNorm(await get(env, 'kl:' + code))

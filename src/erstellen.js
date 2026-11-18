@@ -43,6 +43,48 @@ function lies() {
 
 export function zuruecksetzen() { cr = null }
 
+// ── Foto ──
+// Das Foto bleibt nur im Arbeitsspeicher dieser Seite: Hirnfutter lädt es nirgends hoch und speichert es nicht.
+// Es geht einzig über das Teilen-Fenster des Handys an die KI-App, die der Schüler wählt.
+let fotoDatei = null, fotoUrl = ''
+function fotoSetzen(datei) {
+  if (fotoUrl) URL.revokeObjectURL(fotoUrl)
+  fotoDatei = datei || null
+  fotoUrl = datei ? URL.createObjectURL(datei) : ''
+}
+// Der Weg über das Teilen-Fenster ist eine Einstellung: Standard bleibt Kopieren und Anhängen.
+// Nur wer eine KI-App auf dem Handy hat, kreuzt sie an; das Gerät merkt sich das.
+const KIAPP = 'zk:e:kiapp'
+const kiApp = () => { try { return localStorage.getItem(KIAPP) === '1' } catch { return false } }
+const kiAppSetzen = an => { try { an ? localStorage.setItem(KIAPP, '1') : localStorage.removeItem(KIAPP) } catch {} }
+/** Kann der Browser überhaupt Dateien an Apps weitergeben? (Handys ja, die meisten Computer nein) */
+const teilenMoeglich = () => typeof navigator.share === 'function' && typeof navigator.canShare === 'function'
+/** Kann dieses Gerät das Foto samt Auftrag an eine App weitergeben? (Handy-Browser ja, die meisten Computer nein) */
+const kannFotoTeilen = () => { try { return !!(fotoDatei && navigator.canShare && navigator.canShare({ files: [fotoDatei] })) } catch { return false } }
+
+function fotoBereich(re) {
+  const eingabe = mitKamera => {
+    const inp = h('input', { type: 'file', accept: 'image/*', hidden: true, onchange: e => { const d = e.target.files?.[0]; if (d) { fotoSetzen(d); re() } } })
+    if (mitKamera) inp.setAttribute('capture', 'environment')
+    return inp
+  }
+  const kamera = eingabe(true), galerie = eingabe(false)
+  const hinweis = h('div', { class: 'foto-hinweis' }, 'Hirnfutter behält das Foto nur kurz, bis du es an die KI schickst. Es wird nirgends hochgeladen oder gespeichert. Achte darauf, dass keine Namen oder Noten darauf stehen.')
+  if (fotoDatei) return h('div', { class: 'foto-bereich' }, kamera, galerie,
+    h('div', { class: 'foto-vorschau' }, h('img', { src: fotoUrl, alt: 'Dein Foto' }),
+      h('div', { class: 'foto-akt' },
+        h('button', { class: 'lnk', onclick: () => galerie.click() }, 'Anderes Foto wählen'),
+        h('button', { class: 'lnk', onclick: () => kamera.click() }, 'Neu aufnehmen'),
+        h('button', { class: 'lnk', onclick: () => { fotoSetzen(null); re() } }, 'Entfernen'))),
+    hinweis)
+  return h('div', { class: 'foto-bereich' }, kamera, galerie,
+    h('div', { class: 'zwei' },
+      h('button', { class: 'btn', style: 'height:48px', onclick: () => kamera.click() }, symEl('foto'), 'Foto aufnehmen'),
+      h('button', { class: 'btn ghost', style: 'height:48px', onclick: () => galerie.click() }, symEl('bibliothek'), 'Foto wählen')),
+    hinweis,
+    h('div', { class: 'foto-hinweis' }, 'Du kannst das Foto auch erst bei der KI anhängen.'))
+}
+
 /** Von der Ergebnisseite: Prompt für ein Übungsset zu den Fehlern ist schon fertig. */
 export function folgeVorbereiten(prompt, set) {
   cr = { typ: 'test', folge: true, thema: '', fach: set.fach || 'Deutsch', klasse: set.klasse || '7', anzahl: '', karteart: '', prompt, answer: '', parsed: null, vonTitel: set.titel }
@@ -126,8 +168,12 @@ export function renderErstellen(root, typ, hooks) {
     body.append(
       h('div', { class: 'lbl' }, '1 · Was hast du?'),
       h('div', { class: 'zwei' }, quelle('text', 'Thema oder Text', 'text'), quelle('foto', 'Ich habe ein Foto', 'foto')),
-      foto ? h('div', { class: 'fb', style: 'background:var(--surface-2)' }, h('span', null, '📷'),
-        h('div', null, 'Das Foto hängst du gleich bei der KI an, zusammen mit dem Auftrag. Hirnfutter selbst sieht es nicht. Achte darauf, dass keine Namen oder Noten darauf stehen.')) : null,
+      foto && teilenMoeglich() ? h('label', { class: 'kiapp-wahl' },
+        h('input', { type: 'checkbox', checked: kiApp(), onchange: e => { kiAppSetzen(e.target.checked); if (!e.target.checked) fotoSetzen(null); re() } }),
+        h('span', null, h('b', null, 'Ich habe eine KI-App auf diesem Handy'), h('br'), 'Zum Beispiel ChatGPT. Dann schickt Hirnfutter Foto und Auftrag mit einem Tipp dorthin.')) : null,
+      foto && kiApp() && teilenMoeglich() ? fotoBereich(re)
+        : foto ? h('div', { class: 'fb', style: 'background:var(--surface-2)' }, h('span', null, '📷'),
+          h('div', null, 'Das Foto hängst du gleich bei der KI an, zusammen mit dem Auftrag. Hirnfutter selbst sieht es nicht. Achte darauf, dass keine Namen oder Noten darauf stehen.')) : null,
       h('textarea', { class: 'in', style: 'min-height:' + (foto ? '64px' : '110px'),
         placeholder: foto ? 'Worum geht es? Zum Beispiel «Unit 3, nur die Wörter auf Seite 42». Freiwillig.'
           : cr.typ === 'karten' ? 'Thema oder Text einfügen, zum Beispiel eine Wörterliste.' : 'Thema oder Text eines bestehenden Blatts einfügen. Es dient als Vorlage.',
@@ -140,7 +186,7 @@ export function renderErstellen(root, typ, hooks) {
         cr.err = ''; merk('fach', cr.fach); merk('klasse', cr.klasse)
         const thema = foto ? 'Das Material steht auf dem Foto, das ich mit diesem Auftrag anhänge. Lies alles darauf sorgfältig.' + (cr.thema.trim() ? '\nHinweis dazu: ' + cr.thema.trim() : '') : cr.thema.trim()
         cr.prompt = (cr.typ === 'karten' ? promptKarten : promptTest)({ ...cr, thema, blatt: true })
-        cr.kopiert = false
+        cr.kopiert = false; cr.geteilt = false
         geheZu(2)
       } }, 'Weiter', symEl('weiter')),
       cr.err ? h('div', { class: 'fb no' }, cr.err) : null)
@@ -149,7 +195,7 @@ export function renderErstellen(root, typ, hooks) {
 
   // Zusammenfassung von Schritt 1
   if (cr.folge) body.append(h('div', { class: 'fb', style: 'background:var(--vio-l);color:var(--vio)' }, h('span', null, '↻'), h('div', null, 'Der Auftrag für ein Übungsset zu den Fehlern in «' + (cr.vonTitel || '') + '» ist fertig.')))
-  else body.append(fertig(1, foto ? 'Foto' : 'Material', [cr.fach, stufe, foto ? (cr.thema.trim() ? '«' + cr.thema.trim().slice(0, 50) + '»' : 'Material auf dem Foto') : '«' + cr.thema.trim().slice(0, 50) + (cr.thema.trim().length > 50 ? ' …' : '') + '»'].join(' · '), () => geheZu(1)))
+  else body.append(fertig(1, foto ? 'Foto' : 'Material', [cr.fach, stufe, foto ? (fotoDatei && kiApp() ? 'Foto bereit' : 'Foto hängst du bei der KI an') + (cr.thema.trim() ? ' · «' + cr.thema.trim().slice(0, 40) + '»' : '') : '«' + cr.thema.trim().slice(0, 50) + (cr.thema.trim().length > 50 ? ' …' : '') + '»'].join(' · '), () => geheZu(1)))
 
   const auftrag = h('details', { class: 'auftrag' }, h('summary', { style: 'font-size:13px;font-weight:700;color:var(--text-2);cursor:pointer' }, 'Auftrag ansehen'), h('div', { class: 'mono' }, cr.prompt))
   const kopierKnopf = (text, nachher) => {
@@ -163,6 +209,40 @@ export function renderErstellen(root, typ, hooks) {
   const kiReihe = () => h('div', { class: 'ki-reihe' }, KIS.map(([n, u]) => h('a', { class: 'btn ghost ki', href: u, target: '_blank', rel: 'noopener' }, n + ' ↗')))
 
   // ── Schritt 2: bei der KI ──
+  if (cr.schritt === 2 && foto && kiApp() && kannFotoTeilen()) {
+    // Foto und Auftrag zusammen über das Teilen-Fenster an die KI-App. Den Auftrag zusätzlich kopieren:
+    // Manche Apps nehmen nur das Foto, dann reicht dort «Einfügen».
+    const meldung = h('div')
+    const danach = h('div', { class: 'ki-wahl', hidden: !cr.geteilt },
+      h('div', { style: 'font-size:15px;font-weight:700;color:var(--text-2);line-height:1.4' }, 'Gesendet. Prüfe in der KI-App, ob der Auftrag beim Foto steht. Fehlt er: Eingabefeld gedrückt halten und «Einfügen» tippen. Dann senden.'),
+      h('div', { style: 'font-size:15px;font-weight:600;color:var(--text-2);line-height:1.4;margin-top:6px' }, 'Wenn die KI fertig ist: Kopiere ihre ganze Antwort und komm hierher zurück.'),
+      h('button', { class: 'btn ghost', style: 'height:44px', onclick: () => geheZu(3) }, 'Ich habe die Antwort kopiert →'))
+    const senden = h('button', { class: 'btn', style: 'height:52px', onclick: async () => {
+      navigator.clipboard?.writeText(cr.prompt).catch(() => {}) // im selben Tipp, damit es auch auf dem iPhone klappt
+      try {
+        await navigator.share({ files: [fotoDatei], text: cr.prompt, title: 'Auftrag für die KI' })
+        cr.kopiert = cr.geteilt = true; entwurfSichern(); danach.hidden = false; meldung.replaceChildren()
+      } catch (e) {
+        if (e?.name === 'AbortError') return // Teilen-Fenster ohne Auswahl geschlossen
+        meldung.replaceChildren(h('div', { class: 'fb no' }, h('span', null, '✕'), h('div', null, 'Das Senden hat nicht geklappt. Nimm den Weg unten: Auftrag kopieren und das Foto bei der KI anhängen.')))
+        weg.open = true
+      }
+    } }, symEl('senden'), cr.geteilt ? 'Nochmals an KI senden' : 'An KI senden')
+    // Der bisherige Weg für alle ohne KI-App (KI im Browser)
+    const altDanach = h('div', { class: 'ki-wahl', hidden: !cr.kopiert || cr.geteilt },
+      h('div', { style: 'font-size:15px;font-weight:700;color:var(--text-2);line-height:1.4' }, 'Kopiert. Öffne eine KI, füge den Auftrag ein und hänge dein Foto an (meist über «+» oder die Büroklammer). Dann senden.'),
+      kiReihe(),
+      h('button', { class: 'btn ghost', style: 'height:44px', onclick: () => geheZu(3) }, 'Ich habe die Antwort kopiert →'))
+    const weg = h('details', { class: 'auftrag' },
+      h('summary', { style: 'font-size:13px;font-weight:700;color:var(--text-2);cursor:pointer' }, 'Ohne KI-App: Auftrag kopieren'),
+      h('div', { class: 'stack', style: 'margin-top:8px' }, kopierKnopf('Auftrag kopieren', () => { altDanach.hidden = false }), altDanach, auftrag))
+    body.append(
+      h('div', { class: 'lbl', style: 'margin-top:6px' }, '2 · Bei der KI'),
+      h('div', { class: 'foto-vorschau klein' }, h('img', { src: fotoUrl, alt: 'Dein Foto' }),
+        h('div', { style: 'font-size:15px;font-weight:600;color:var(--text-2);line-height:1.4' }, 'Tippe auf «An KI senden» und wähle deine KI-App, zum Beispiel ChatGPT, Gemini oder Claude. Foto und Auftrag kommen zusammen dort an.')),
+      senden, meldung, danach, weg)
+    return
+  }
   if (cr.schritt === 2) {
     const danach = h('div', { class: 'ki-wahl', hidden: !cr.kopiert },
       h('div', { style: 'font-size:15px;font-weight:700;color:var(--text-2);line-height:1.4' }, foto
@@ -185,7 +265,7 @@ export function renderErstellen(root, typ, hooks) {
   }
 
   // ── Schritt 3: Antwort zurückbringen ──
-  body.append(fertig(2, 'Bei der KI', cr.kopiert ? 'Auftrag kopiert' + (foto ? ', Foto angehängt' : '') : 'Auftrag noch nicht kopiert', () => geheZu(2), 'Nochmals'))
+  body.append(fertig(2, 'Bei der KI', cr.geteilt ? 'Foto und Auftrag an die KI gesendet' : cr.kopiert ? 'Auftrag kopiert' + (foto ? ', Foto angehängt' : '') : 'Auftrag noch nicht kopiert', () => geheZu(2), 'Nochmals'))
   const ta = h('textarea', { class: 'in code', style: 'min-height:90px', placeholder: 'Oder die Antwort von Hand hier einfügen …', oninput: e => { cr.answer = e.target.value; entwurfSichern() } }, cr.answer)
   const einf = h('button', { class: 'btn ' + (cr.typ === 'test' ? 'blue' : ''), onclick: async () => {
     let t = ''
@@ -238,6 +318,7 @@ function speichern(p, hooks) {
   set.items = p.items
   saveLibSet(set)
   entwurfWeg()
+  fotoSetzen(null)
   const hinweis = p.problems.length ? (p.problems.length === 1 ? 'Ein Teil der Antwort war unlesbar und fehlt.' : p.problems.length + ' Teile der Antwort waren unlesbar und fehlen.') : ''
   cr = null
   hooks.gespeichert(set, hinweis)

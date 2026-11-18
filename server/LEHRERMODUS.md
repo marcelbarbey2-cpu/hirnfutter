@@ -17,6 +17,7 @@ Auf dem Server liegt nur Lernmaterial. Es gibt keine Schüler-Logins, keine Sch�
 - Codes sind zufällig, 6 Zeichen, ohne verwechselbare Zeichen (kein 0/O, 1/I/L).
 - Keine Rückmeldung von Schülern an Lehrpersonen. Ob jemand zusätzlich übt, liegt bei den Schülern.
 - Lehrpersonen verwalten ihre Klassen und Sets selbst, inklusive Löschen und Papierkorb.
+- **Notfall-Recht der Verwaltung:** Unter «Alle Klassen» → «Sets in der Klasse» sieht die Verwaltung jedes Set jeder Lehrperson und kann es für Schüler ausblenden, aus der Klasse nehmen oder löschen (30 Tage Papierkorb, die Lehrperson kann es wiederherstellen). Andere Lehrpersonen, auch die Klassenleitung, können fremde Sets nicht verändern.
 - **Eigene Adresse für Lehrpersonen:** Lehrpersonen öffnen https://hirnfutter.pages.dev/lehrer und melden sich dort an. Die Seite fragt zuerst nur nach dem Lehrercode (ohne Reiter) und erklärt den Modus in vier Schritten. Die Schüleransicht zeigt keinen Hinweis auf den Lehrermodus. Nach der Anmeldung erscheint auf dem Gerät der Reiter «Klassen», auch wenn man die App über die normale Adresse öffnet. Es ist dieselbe App: Sets, die eine Lehrperson erstellt, liegen in derselben Bibliothek.
 - Die Verwaltung (Lehrercodes ausstellen und sperren) gehört dem Betreiber. Der Verwaltungsschlüssel gilt gleichzeitig als dessen Lehrercode und öffnet im Lehrermodus zusätzlich den Bereich «Verwaltung».
 

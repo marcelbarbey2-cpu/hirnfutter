@@ -198,3 +198,8 @@ export const verwSperren = (id, an) => lp('/admin/lehrer/' + id + (an ? '/entspe
 export const verwLoeschen = id => lp('/admin/lehrer/' + id, { methode: 'DELETE' })
 export const verwNeuerCode = id => lp('/admin/lehrer/' + id + '/neuer-code', { methode: 'POST' })
 export const verwUebergeben = (code, lpId) => lp('/admin/klasse/' + code + '/uebergeben', { methode: 'POST', daten: { lp: lpId } })
+// Notfall-Recht der Verwaltung über einzelne Sets, egal von wem
+export const verwKlasse = code => lp('/admin/klasse/' + code)
+export const verwKlasseSet = (code, setId, tat) => lp('/admin/klasse/' + code + '/set/' + setId + '/' + tat, { methode: 'POST' })
+export const verwSetLoeschen = setId => lp('/admin/set/' + setId, { methode: 'DELETE' })
+export const verwSetWieder = setId => lp('/admin/set/' + setId + '/wiederherstellen', { methode: 'POST' })
