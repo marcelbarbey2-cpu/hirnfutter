@@ -48,15 +48,20 @@ export const neueId = () => Math.random().toString(36).slice(2, 9) + Date.now().
 /** Karten/Aufgaben eines Sets als Deck für Leitner und Fortschritt. */
 export function libDeck(set) {
   const roh = set.typ === 'tutor'
-    ? (set.lektion?.schritte || []).filter(s => s.s === 'aufgabe').map(s => s.item)
-    : (set.items || []).filter(it => it.t !== 'info')
+    ? (set.lektion?.schritte || []).filter(s => s?.s === 'aufgabe').map(s => s.item)
+    : (Array.isArray(set.items) ? set.items : []).filter(it => it && it.t !== 'info')
   const seen = new Set()
   const cards = []
+  let beschaedigt = 0
   for (const it of roh) {
-    const id = itemKey(it)
-    if (seen.has(id)) continue
-    seen.add(id)
-    cards.push({ ...it, id, front: frageText(it), back: solText(it) })
+    // Eine fehlerhafte Aufgabe (z. B. aus einer abgeschnittenen KI-Antwort oder alten Sicherung)
+    // wird übersprungen und gezählt. Sonst bricht der ganze Start ab und die App bleibt weiss.
+    try {
+      const id = itemKey(it)
+      if (seen.has(id)) continue
+      seen.add(id)
+      cards.push({ ...it, id, front: frageText(it), back: solText(it) })
+    } catch (e) { beschaedigt++; console.warn('[Set] Aufgabe übersprungen in «' + set.titel + '»:', e) }
   }
-  return { name: set.titel, cards, kind: 'lib', libId: set.id, typ: set.typ, fach: set.fach || '', klasse: set.klasse || '', set }
+  return { name: String(set.titel || 'Ohne Titel'), cards, kind: 'lib', libId: set.id, typ: set.typ, fach: set.fach || '', klasse: set.klasse || '', set, beschaedigt }
 }

@@ -42,6 +42,7 @@ import { alleAbgleichen, serverBereit, getLehrercode, anzeigeName } from './klas
 import { klassencodeDialog, renderLehrer } from './ansicht-klassen.js'
 import { sym } from './symbole.js'
 import { radEinbauen, heuteGedreht } from './rad.js'
+import { fahrplan } from './fahrplan.js'
 import { kannVorlesen, vorlesen, spracheRaten, stopp as vorlesenStopp } from './vorlesen.js'
 import { updateLibSet } from './bibliothek.js'
 
@@ -155,7 +156,28 @@ window.addEventListener('popstate', () => {
   verlaufScharf()
 })
 
+// Geht beim Zeichnen etwas schief, erscheint statt einer weissen Seite ein Ausweg. Die Daten bleiben unberührt.
 function render() {
+  try { ansichtZeichnen() }
+  catch (e) { console.error('[Hirnfutter] Ansicht konnte nicht gezeichnet werden:', e); notfallAnzeige(e) }
+}
+function notfallAnzeige(e) {
+  const zurStart = state.view !== 'home'
+  root.innerHTML = `
+    <div class="screen">
+      <div class="empty-state notfall">
+        <img class="empty-hirn" src="${import.meta.env.BASE_URL}hirn.png" alt="" width="96" height="96" />
+        <h2>Hoppla, hier hat sich das Hirn verknotet.</h2>
+        <p>Diese Seite liess sich nicht anzeigen. Deine Sets, dein Fortschritt und deine Krümel sind nicht verloren.</p>
+        ${zurStart ? '<button class="btn btn-primary" data-action="notfall-start">Zum Start</button>' : ''}
+        <button class="btn ${zurStart ? 'btn-ghost' : 'btn-primary'}" data-action="notfall-bib">Zur Bibliothek</button>
+        <button class="btn btn-ghost" data-action="sichern">Daten sichern</button>
+        <button class="btn btn-ghost" data-action="notfall-neu">Neu laden</button>
+        <p class="notfall-detail">${escHtml(String(e?.message || e || '').slice(0, 160))}</p>
+      </div>
+    </div>`
+}
+function ansichtZeichnen() {
   if (state.view === 'home')         renderHome()
   else if (state.view === 'set' && state.satz && !state.deck.cards.every(c => !c.t || c.t === 'karte')) renderSatz(root, state.deck, { ...hooksBlatt, modus: state.satz })
   else if (state.view === 'set')     renderSet()
@@ -375,6 +397,15 @@ function pruefText(datum) {
   return n <= 0 ? 'Prüfung heute' : n === 1 ? 'Prüfung morgen' : 'Prüfung in ' + n + ' Tagen'
 }
 const datumLang = d => new Date(d + 'T12:00:00').toLocaleDateString('de-CH', { weekday: 'long', day: 'numeric', month: 'long' })
+/** «Freitag» innerhalb einer Woche, sonst «21. November». */
+const pruefTag = d => { const t = Math.round((new Date(d + 'T00:00:00Z') - new Date(today() + 'T00:00:00Z')) / 86400000)
+  return new Date(d + 'T12:00:00').toLocaleDateString('de-CH', t <= 6 ? { weekday: 'long' } : { day: 'numeric', month: 'long' }) }
+/** Text in der Zeile «Bald Prüfung» auf dem Start: Tagesziel aus dem Fahrplan, sonst nur der Termin. */
+function pruefAbzeichen(deck, datum) {
+  const pl = fahrplan(deck), wann = pruefText(datum).replace('Prüfung ', '')
+  if (!pl || (!pl.ziel && !pl.offen)) return pruefText(datum)
+  return pl.offen ? 'heute ' + pl.offen + ' · ' + wann : '✓ heute · ' + wann
+}
 
 function renderHome() {
   const alle = [
@@ -419,11 +450,11 @@ function renderHome() {
           ${vorbei.map(e => `<div class="pruef-vorbei"><span>Die Prüfung zu <b>«${escHtml(e.deck.name)}»</b> ist vorbei. Brauchst du das Set noch auf dem Start?</span>
             <div class="pruef-vorbei-akt"><button class="btn btn-primary btn-sm" data-action="pruef-fertig" data-set-name="${escAttr(e.deck.name)}">Vom Start nehmen</button>
             <button class="btn btn-ghost btn-sm" data-action="pruef-behalten" data-set-name="${escAttr(e.deck.name)}">Behalten</button></div></div>`).join('')}
-          ${bald.length ? `<h2 class="abschnitt">Bald Prüfung</h2><div class="set-list">${bald.map(e => renderSetRow(e, pruefText(pruef(e)))).join('')}</div>` : ''}
+          ${bald.length ? `<h2 class="abschnitt">Bald Prüfung</h2><div class="set-list">${bald.map(e => renderSetRow(e, pruefAbzeichen(e.deck, pruef(e)))).join('')}</div>` : ''}
           ${nFehler ? `<button class="fehler-knopf" data-action="fehler"><span><b>Meine Fehler üben</b><br><small>${nFehler} ${nFehler === 1 ? 'Aufgabe' : 'Aufgaben'}, die du zuletzt falsch hattest</small></span><span class="fehler-pfeil">→</span></button>` : ''}
           ${dran.length ? `<h2 class="abschnitt">Heute dran</h2><div class="set-list">${dran.map(e => renderSetRow(e)).join('')}</div>` : bald.length ? '' : `<div class="alles-gut">✓ Für heute ist alles gefüttert.</div>`}
           ${rest.length ? `<h2 class="abschnitt">${dran.length ? 'Weitere Sets' : 'Deine Sets'}</h2><div class="set-list">${rest.map(e => renderSetRow(e)).join('')}</div>` : ''}
-          ${eintraege.length > zeigen.length || nPause ? `<button class="sammlung-link" style="background:none;border:0;width:100%" data-action="nav" data-ziel="bibliothek">Alle ${alle.length} Sets in der Bibliothek${nPause ? ` (${nPause} vom Start genommen)` : ''} →</button>` : ''}
+          ${eintraege.length > zeigen.length || nPause ? `<button class="sammlung-link" style="background:none;border:0;width:100%" data-action="nav" data-ziel="bibliothek">${alle.length === 1 ? 'Dein Set' : 'Alle ' + alle.length + ' Sets'} in der Bibliothek${nPause ? ` (${nPause} vom Start genommen)` : ''} →</button>` : ''}
           ${lpLink()}
         `}
         <button class="sammlung-link" style="background:none;border:0;width:100%" data-action="hilfe">${sym('hilfe')}So funktioniert Hirnfutter →</button>
@@ -545,14 +576,16 @@ function renderSet() {
             <span class="set-stand-text"><b>sitzt</b><br>${sitzt} von ${total} ${einheit}</span>
           </div>
           ${renderBoxBar(stats.boxCounts, total)}
-          ${dueNow > 0
-            ? `<button class="btn btn-study gross" data-action="study">${sym('ueben')}Jetzt üben · ${dueNow} ${dueNow === 1 ? (nurKarten ? 'Karte' : 'Aufgabe') : einheit}</button>`
-            : `<button class="btn btn-study gross btn-disabled" disabled>Für heute alles gefüttert ✓</button>`}
+          ${planHtml(deck, dueNow, nurKarten, einheit)}
           <button class="btn btn-study-all gross" data-action="study-all">${sym('wiederholen')}Alles durchgehen (${total})</button>
           ${session.studied > 0 ? `<div class="studied-today">Heute schon ${session.studied} geübt</div>` : ''}
         </div>
 
-        ${deck.virtuell ? '' : `<div class="pruef-box">
+        ${deck.virtuell ? '' : fahrplan(deck) ? `<details class="pruef-box pruef-kompakt">
+          <summary><span><b>Prüfung:</b> ${escHtml(new Date(settings.pruefung + 'T12:00:00').toLocaleDateString('de-CH', { weekday: 'short', day: 'numeric', month: 'long' }))}</span><span class="pruef-aendern">Ändern</span></summary>
+          <input type="date" class="pruef-in" value="${escAttr(settings.pruefung)}" min="${today()}" aria-label="Datum der Prüfung" />
+          <button class="pause-knopf" style="margin:0" data-action="pruef-weg">Termin entfernen</button>
+        </details>` : `<div class="pruef-box">
           <label class="pruef-zeile"><span><b>Prüfung am</b>${settings.pruefung ? `<br><small>${escHtml(datumLang(settings.pruefung))}${settings.pruefung >= today() ? ' · ' + escHtml(pruefText(settings.pruefung).replace('Prüfung ', '')) : ' · vorbei'}</small>` : '<br><small>Dann steht das Set auf dem Start zuoberst.</small>'}</span>
             <input type="date" class="pruef-in" value="${escAttr(settings.pruefung)}" min="${today()}" aria-label="Datum der Prüfung" /></label>
           ${settings.pruefung ? '<button class="pause-knopf" style="margin:0" data-action="pruef-weg">Termin entfernen</button>' : ''}
@@ -579,6 +612,48 @@ function renderSet() {
       </main>
     </div>
   `
+}
+
+/** Übungsknopf der Set-Seite. Mit Prüfungstermin: der Fahrplan («Heute 12 Karten für die Prüfung»). */
+function planHtml(deck, dueNow, nurKarten, einheit) {
+  const eine = nurKarten ? 'Karte' : 'Aufgabe'
+  const anz = n => n + ' ' + (n === 1 ? eine : einheit)
+  const normal = dueNow > 0
+    ? `<button class="btn btn-study gross" data-action="study">${sym('ueben')}Jetzt üben · ${anz(dueNow)}</button>`
+    : `<button class="btn btn-study gross btn-disabled" disabled>Für heute alles gefüttert ✓</button>`
+  // Ist das Prüfungspensum erledigt, ist «Jetzt üben» nur noch ein Angebot: Nebenknopf statt Hauptknopf
+  const freiwillig = dueNow > 0 ? `<button class="btn btn-study-all gross" data-action="study">${sym('ueben')}Mehr üben · ${anz(dueNow)}</button>` : ''
+  const pl = fahrplan(deck)
+  if (!pl) return normal
+  const bis = escHtml(pruefTag(pl.datum)), tage = pl.tage === 1 ? 'morgen ist die Prüfung' : 'noch ' + pl.tage + ' Tage'
+  if (pl.offen > 0) return `
+    <div class="plan"><div class="plan-kopf"><b>Fahrplan bis ${bis}</b></div><div class="plan-sub">Heute ${anz(pl.offen)} · ${tage}</div>${planKalender(pl, einheit)}</div>
+    <button class="btn btn-study gross" data-action="study-plan">${sym('ueben')}Für die Prüfung · ${anz(pl.offen)}</button>`
+  if (pl.allesSitzt) return `
+    <div class="plan"><div class="plan-kopf"><span class="plan-ok">✓</span> <b>Bis ${bis} sitzt alles</b></div><div class="plan-sub">Zum Auffrischen: «Alles durchgehen» · ${tage}</div>${planKalender(pl, einheit)}</div>` + freiwillig
+  return `
+    <div class="plan"><div class="plan-kopf"><span class="plan-ok">✓</span> <b>Heute geschafft</b></div><div class="plan-sub">Fahrplan bis ${bis} · ${tage}</div>${planKalender(pl, einheit)}</div>` + freiwillig
+}
+
+/** Fahrplan als kleiner Wochenkalender (Mo–So): Datum im Kästchen, ✓ für geübte Tage, Doktorhut am Prüfungstag. */
+function planKalender(pl, einheit) {
+  const ersterWt = (new Date(pl.leiste[0].tag + 'T12:00:00').getDay() + 6) % 7 // Montag = 0
+  const leer = Array.from({ length: ersterWt }, () => '<span class="pl-zelle pl-leer" aria-hidden="true"></span>').join('')
+  const zellen = pl.leiste.map(d => {
+    const nr = Number(d.tag.slice(8))
+    const inhalt = d.status === 'geuebt' || d.status === 'heute-fertig' ? '✓' : d.status === 'pruefung' ? sym('pruefung') : nr
+    return `<span class="pl-zelle pl-${d.status}" aria-hidden="true">${inhalt}</span>`
+  }).join('')
+  const kopf = ['Mo', 'Di', 'Mi', 'Do', 'Fr', 'Sa', 'So'].map(t => `<span class="pl-wt" aria-hidden="true">${t}</span>`).join('')
+  // Für die Vorlesefunktion: eine zusammenfassende Beschreibung statt einzelner Kästchen
+  const vorbei = pl.leiste.filter(d => d.status === 'geuebt' || d.status === 'aus')
+  const geuebt = vorbei.filter(d => d.status === 'geuebt').length
+  const heute = pl.leiste.find(d => d.status.startsWith('heute'))
+  const beschreibung = (vorbei.length ? 'An ' + geuebt + ' von ' + vorbei.length + ' bisherigen Tagen geübt. ' : '') + (heute?.status === 'heute-fertig' ? 'Heute erledigt. ' : 'Heute offen. ') + pruefText(pl.datum) + '.'
+  const ausblick = pl.sitzenDann >= pl.total
+    ? `Wenn du dranbleibst, sitzen am ${escHtml(pruefTag(pl.datum))} <b>alle ${pl.total} ${einheit}</b>.`
+    : `Wenn du dranbleibst, sitzen am ${escHtml(pruefTag(pl.datum))} etwa <b>${pl.sitzenDann} von ${pl.total} ${einheit}</b>. Üb die übrigen trotzdem: Jede Wiederholung hilft.`
+  return `<div class="pl-kal" role="img" aria-label="${escAttr(beschreibung)}">${kopf}${leer}${zellen}</div><div class="pl-ausblick">${ausblick}</div>`
 }
 
 function renderBoxBar(boxCounts, total) {
@@ -877,9 +952,22 @@ function gradeCard(grade) {
   render()
 }
 
-/** Glücksrad: einmal pro Tag, wenn heute geübt wurde und nichts mehr fällig ist. */
+/**
+ * Glücksrad, einmal pro Tag, wenn
+ *  1. alle Wiederholungen von heute erledigt sind: Es zählen nur Karten, die man schon einmal beantwortet hat.
+ *     Neue, nie geübte Karten blockieren nie (sonst sperrt ein unberührtes Set das Rad für immer).
+ *  2. heute mindestens eine Portion geübt wurde: 20 Karten, oder ein kleineres Set ganz.
+ *  3. Vom Start genommene Sets zählen nicht mit.
+ */
 function radBereit() {
-  return !heuteGedreht() && (getTage()[today()] || 0) > 0 && nichtsMehrFaellig()
+  if (heuteGedreht()) return false
+  const heute = today()
+  const decks = alleDecks().filter(d => !istPausiert(d.name))
+  const offen = decks.some(d => { const p = getProgress(d.name); return getDueCards(d, p, Infinity).some(c => p[c.id]?.lastReviewed) })
+  if (offen) return false
+  if ((getTage()[heute] || 0) >= ROUND_SIZE) return true
+  if (decks.some(d => { const pl = fahrplan(d); return pl && pl.ziel > 0 && pl.erledigt >= pl.ziel })) return true // Prüfungsportion erledigt
+  return decks.some(d => d.cards.length > 0 && d.cards.length < ROUND_SIZE && d.cards.every(c => getProgress(d.name)[c.id]?.lastReviewed === heute))
 }
 function radZeigen() {
   const platz = document.getElementById('rad-platz')
@@ -903,7 +991,7 @@ function startStudy(all = false) {
   const deck = state.deck
   if (!deck) return
   const progress = getProgress(deck.name)
-  const queue = all ? getAllCardsSorted(deck, progress) : getDueCards(deck, progress)
+  const queue = all === 'plan' ? (fahrplan(deck)?.queue || []) : all ? getAllCardsSorted(deck, progress) : getDueCards(deck, progress)
 
   if (!queue.length) { showToast('Keine Karten fällig.', 'info'); return }
   // Fälligkeit jetzt festhalten: Krümel gibt es nur für Karten, die dran waren.
@@ -1109,7 +1197,7 @@ function ladenTipp(platzId, teilRoh) {
   }
 
   if (teil.rad && !getBesitz().has(schluessel(platzId, teilId))) {
-    showToast(`«${teil.titel}» gibt es nur am Glücksrad (${SELTENHEIT[teil.rad].name}). Füttere alles Fällige, dann darfst du drehen.`)
+    showToast(`«${teil.titel}» gibt es nur am Glücksrad (${SELTENHEIT[teil.rad].name}). Übe eine Portion und erledige deine Wiederholungen, dann darfst du drehen.`)
     return
   }
 
@@ -1287,7 +1375,7 @@ function showHilfe() {
         ${punkt('Fällig', 'Je höher die Stufe, desto länger die Pause bis zum nächsten Mal. «Fällig» heisst: Heute ist diese Karte wieder dran. Ist nichts fällig, hast du für heute alles gemacht.')}
         ${punkt('Sitzt', 'Eine Karte «sitzt», wenn sie auf Stufe 4 oder 5 liegt. Du hast sie also mehrmals richtig gewusst, mit Pausen dazwischen. Darum bringt es mehr, jeden Tag kurz zu üben als einmal lang.')}
         ${punkt('Krümel', 'Krümel bekommst du, wenn eine fällige Karte eine Stufe aufsteigt. Im Shop tauschst du sie gegen Sachen für dein Hirn. Wer zusätzlich übt, lernt mehr, bekommt dafür aber keine Krümel.')}
-        ${punkt('Glücksrad', 'Hast du heute alles Fällige gefüttert, darfst du einmal am Rad drehen. Gratis, und jedes Feld gewinnt: ein paar Krümel oder selten ein Fundstück für den Shop.')}
+        ${punkt('Glücksrad', 'Hast du heute eine Portion geübt (20 Karten oder ein kleines Set ganz) und alle Wiederholungen erledigt, darfst du einmal am Rad drehen. Neue Karten zählen nicht dazu. Gratis, und jedes Feld gewinnt: ein paar Krümel oder selten ein Fundstück für den Shop.')}
         ${punkt('Üben und Blatt', 'Bei «Üben» kommt eine Aufgabe nach der anderen. «Blatt» zeigt alle Aufgaben wie eine Prüfung: ausfüllen, auswerten, auf Wunsch drucken.')}
         ${punkt('Prüfung', 'Trag auf der Seite eines Sets das Datum der Prüfung ein. Dann steht das Set auf dem Start zuoberst. Nach der Prüfung nimmst du es vom Start.')}
         ${punkt('Deine Daten', 'Alles liegt nur auf diesem Gerät. In der Bibliothek unter «Daten sichern» lädst du eine Sicherung herunter, zum Beispiel vor einem Handywechsel.')}
@@ -1337,6 +1425,7 @@ document.addEventListener('click', e => {
   if (action === 'back-to-set')   state.deck?.virtuell ? goHome() : navigate('set')
   if (action === 'study')         startStudy()
   if (action === 'study-all')     startStudy(true)
+  if (action === 'study-plan')    startStudy('plan')
   if (action === 'study-more')    startStudy()
   if (action === 'reset')         confirmReset()
   if (action === 'pause-an')      { setzePause(state.deck.name, true); showToast('«' + state.deck.name + '» ist vom Start genommen. Du findest es in der Bibliothek.'); render() }
@@ -1344,6 +1433,9 @@ document.addEventListener('click', e => {
   if (action === 'pruef-weg')     { setzePruefung(state.deck.name, ''); showToast('Prüfungstermin entfernt.'); render() }
   if (action === 'pruef-fertig')  { setzePruefung(setName, ''); setzePause(setName, true); showToast('«' + setName + '» ist vom Start genommen. Du findest es in der Bibliothek.'); render() }
   if (action === 'pruef-behalten') { setzePruefung(setName, ''); render() }
+  if (action === 'notfall-start') { navigate('home'); return }
+  if (action === 'notfall-bib')   { for (let i = 0; i < 5 && bibZurueck(); i++) {} navigate('bibliothek'); return } // offene Unteransicht (z. B. Bearbeiten) zuerst schliessen
+  if (action === 'notfall-neu')   { location.reload(); return }
   if (action === 'sichern')       { sicherungLaden(); showToast('Sicherung heruntergeladen. Bewahre die Datei gut auf.', 'success'); render() }
   if (action === 'sichern-spaeter') { sicherungSpaeter(); render() }
   if (action === 'hilfe')         { fensterScharf(); showHilfe() }

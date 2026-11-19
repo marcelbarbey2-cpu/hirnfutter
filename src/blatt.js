@@ -1,6 +1,7 @@
 // Arbeitsblatt (zum Drucken) und Eingabe-Seite für Lösungen vom Papier.
 // Beide Seiten lesen dieselbe feste Anordnung (Buchstaben, Nummern, Reihenfolge),
 // sonst würde «B» auf dem Blatt etwas anderes bedeuten als in der Eingabe.
+import { symEl } from './symbole.js'
 import { h, kopieren, kopierenMitKi } from './dom.js'
 import { fnv, nz, cmp, num, solText, TNAME, itemKey, frageText, promptErklaere, promptFehlerErklaerung, promptFehlerset, stichCheck, ohneKopf } from './format.js'
 import { bewerte, gradeAus } from './fortschritt.js'
@@ -339,16 +340,16 @@ export function renderSatz(root, deck, hooks) {
     seite.append(h('div', { class: 'bl-loesblatt nur-druck' }, h('h1', { class: 'bl-titel' }, 'Lösungen: ' + deck.name),
       ...cards.map(c => h('div', { class: 'bl-lz' }, h('b', null, (++lnr) + '. '), loesungsText(c, anordnung(c)), c.zeichnung?.abbildung ? zeichnungEl(c.zeichnung, { loesung: true }) : null))))
     modusLeiste.replaceChildren(
-      h('button', { class: 'bl-seg', onclick: () => hooks.ueben() }, 'Üben'),
-      h('button', { class: 'bl-seg on' }, 'Blatt'))
+      h('button', { class: 'bl-seg', onclick: () => hooks.ueben() }, symEl('ueben'), 'Üben'),
+      h('button', { class: 'bl-seg on' }, symEl('blatt'), 'Blatt'))
     const lcb = h('input', { type: 'checkbox', onchange: () => seite.classList.toggle('zeige-loes', lcb.checked) })
     const druck = mit => { seite.classList.toggle('mit-loesblatt', mit); window.print() }
     const letzt = letztes()
     werkzeug.replaceChildren(
-      h('button', { class: 'lnk', onclick: () => druck(false) }, '🖨 Drucken'),
-      h('button', { class: 'lnk', onclick: () => druck(true) }, '🖨 Mit Lösungsblatt'),
+      h('button', { class: 'lnk', onclick: () => druck(false) }, symEl('drucken'), 'Drucken'),
+      h('button', { class: 'lnk', onclick: () => druck(true) }, symEl('drucken'), 'Mit Lösungsblatt'),
       h('label', { class: 'crit', style: 'padding:0;font-size:15px' }, lcb, 'Lösungen anzeigen'),
-      h('button', { class: 'lnk', onclick: () => zeichne(true) }, '↺ Neu beginnen'),
+      h('button', { class: 'lnk', onclick: () => zeichne(true) }, symEl('wiederholen'), 'Neu beginnen'),
       letzt ? h('div', { style: 'flex-basis:100%;font-size:13px;font-weight:700;color:var(--text-2)' }, 'Letztes Mal: ' + letzt.p + ' von ' + letzt.max + ' Punkten (' + letzt.d + ')') : null)
     if (!neu && entwurfLaden()) werkzeug.append(h('div', { class: 'fb ok', style: 'flex-basis:100%;margin:0' }, h('span', null, '✓'), h('div', null, 'Deine Eingaben von vorhin sind wieder da. Mit «Neu beginnen» leerst du das Blatt.')))
     zusammenfassung()
@@ -372,7 +373,7 @@ export function renderSatz(root, deck, hooks) {
     unten.replaceChildren()
     if (!S.abgegeben) {
       if (S.modus === 'test') {
-        const ab = h('button', { class: 'btn blue', onclick: () => {
+        const ab = h('button', { class: 'btn', onclick: () => {
           const n = cards.filter(leer).length
           if (n && !ab.dataset.sicher) { ab.dataset.sicher = '1'; ab.textContent = n + (n === 1 ? ' Aufgabe ist' : ' Aufgaben sind') + ' noch leer. Trotzdem auswerten?'; return }
           alle()
@@ -403,7 +404,7 @@ export function renderSatz(root, deck, hooks) {
     const fehler = cards.map(c => ({ c, r: S.res.get(c.id) })).filter(x => x.r && x.r.r !== 'richtig')
     if (fehler.length) {
       const proto = fehler.map((x, i) => (i + 1) + '. Aufgabe: ' + frageText(x.c) + '\n   Seine Antwort: ' + (x.r.selbst ? '(Selbstkontrolle: ' + (x.r.r === 'beinahe' ? 'nur teilweise gewusst' : x.r.r ? 'nicht gewusst' : 'nicht bewertet') + ')' : (!x.r.given || x.r.given === '–' ? '(keine)' : x.r.given)) + '\n   Richtig: ' + solText(x.c)).join('\n')
-      const eb = h('button', { class: 'btn vio', onclick: () => kopierenMitKi(promptFehlerErklaerung(deck.name, proto, ctx), eb) }, 'Alle Fehler erklären lassen (Auftrag kopieren)')
+      const eb = h('button', { class: 'btn ghost', onclick: () => kopierenMitKi(promptFehlerErklaerung(deck.name, proto, ctx), eb) }, 'Alle Fehler erklären lassen (Auftrag kopieren)')
       unten.append(eb, h('button', { class: 'btn ghost', onclick: () => hooks.folge(promptFehlerset(proto, ctx), { titel: deck.name, fach: deck.fach, klasse: deck.klasse }) }, 'Übungsset zu den Fehlern erstellen'))
     }
     unten.append(h('button', { class: 'btn ghost', onclick: () => zeichne(true) }, 'Neu beginnen'))

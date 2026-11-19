@@ -1,7 +1,7 @@
 // Bibliothek: alle Sets verwalten, Sets einfügen.
 import { h, kopieren } from './dom.js'
 import { parseAnswer, TNAME, MIX, frageText, solText } from './format.js'
-import { getLib, getLibSet, saveLibSet, updateLibSet, deleteLibSet, neueId } from './bibliothek.js'
+import { getLib, getLibSet, saveLibSet, updateLibSet, deleteLibSet, neueId, libDeck } from './bibliothek.js'
 import { getSets, sicherung, wiederherstellen, sicherungInfo, setsAufGeraet, istPausiert, setzePause, sicherungGemacht } from './storage.js'
 import { setLink } from './teilen.js'
 import { getKlassen, klasseVerlassen, alleAbgleichen, eigeneKopie, serverBereit, zeigeCode, getLehrercode, anzeigeName, ungespeichert, veroeffentlichen, appStand } from './klassen.js'
@@ -35,10 +35,15 @@ function renderBearbeiten(root, hooks, set) {
     h('div', { class: 'seite', style: 'padding-bottom:24px' },
       h('div', { class: 'lbl' }, 'Titel'), titel,
       h('button', { class: 'btn ghost', style: 'height:44px', onclick: () => { const t = titel.value.trim(); if (t && t !== set.titel) { updateLibSet(set, t); hooks.neu() } } }, 'Titel ändern (Fortschritt bleibt)'),
-      h('div', { class: 'lbl', style: 'margin-top:8px' }, set.items.length + ' Einträge'),
-      ...set.items.map((it, n) => h('div', { class: 'kk ed' },
-        h('button', { class: 'vs-x', 'aria-label': 'Entfernen', onclick: () => { set.items.splice(n, 1); sichern(); hooks.neu() } }, '✕'),
-        h('span', { class: 'lbl' }, TNAME[it.t] || it.t), ...felder(it))),
+      h('div', { class: 'lbl', style: 'margin-top:8px' }, (set.items || []).length + ' Einträge'),
+      ...(set.items || []).map((it, n) => {
+        // Eine beschädigte Aufgabe darf den Editor nicht sprengen: sie lässt sich hier entfernen.
+        let inhalt
+        try { inhalt = [h('span', { class: 'lbl' }, TNAME[it?.t] || it?.t || '?'), ...felder(it)] }
+        catch { inhalt = [h('span', { class: 'lbl' }, 'Beschädigt'), h('div', { class: 'bib-defekt' }, 'Diese Aufgabe ist unvollständig und wird beim Üben übersprungen. Entferne sie mit ✕ oder erstelle das Set neu.')] }
+        return h('div', { class: 'kk ed' },
+          h('button', { class: 'vs-x', 'aria-label': 'Entfernen', onclick: () => { set.items.splice(n, 1); sichern(); hooks.neu() } }, '✕'), ...inhalt)
+      }),
       h('button', { class: 'btn', onclick: zu }, 'Fertig'))))
 }
 
@@ -103,9 +108,10 @@ export function renderBibliothek(root, hooks) {
   // Alle Sets in eine einheitliche Form bringen.
   const alle = []
   for (const s of lib) {
-    const n = s.items.filter(i => i.t !== 'info').length
+    const d = libDeck(s)
+    const n = d.cards.length
     const typ = s.typ === 'karten' ? 'karten' : 'test'
-    alle.push({ id: s.id, kind: 'lib', typ, titel: s.titel, fach: s.fach || '', n, einheit: typ === 'karten' ? (n === 1 ? 'Karte' : 'Karten') : (n === 1 ? 'Aufgabe' : 'Aufgaben'), created: s.created || 0, s })
+    alle.push({ id: s.id, kind: 'lib', typ, titel: d.name, fach: s.fach || '', n, beschaedigt: d.beschaedigt, einheit: typ === 'karten' ? (n === 1 ? 'Karte' : 'Karten') : (n === 1 ? 'Aufgabe' : 'Aufgaben'), created: s.created || 0, s })
   }
   for (const e of links) alle.push({ id: e.name, kind: 'link', typ: 'karten', titel: e.name, fach: '', n: e.cards.length, einheit: 'Karten', created: 0, e })
 
@@ -124,7 +130,7 @@ export function renderBibliothek(root, hooks) {
   const zeile = x => {
     const akt = h('div', { class: 'bib-akt no-print', hidden: true })
     if (x.kind === 'lib') {
-      const cp = h('button', { class: 'lnk', onclick: () => kopieren(exportText(x.s), cp) }, 'Als Text kopieren')
+      const cp = h('button', { class: 'lnk', onclick: () => kopieren(exportText(x.s), cp) }, symEl('kopieren'), 'Als Text kopieren')
       const weitere = h('details', { class: 'bib-weitere' }, h('summary', null, 'Weitere'), cp)
       const sf = h('select', { class: 'in bib-fach', onchange: e => { x.s.fach = e.target.value; updateLibSet(x.s); hooks.neu() } },
         [...FACH_ORDER, ...(FACH_ORDER.includes(x.fach) || !x.fach ? [] : [x.fach])].map(f => h('option', { value: f, selected: f === x.fach }, f)))
@@ -133,10 +139,10 @@ export function renderBibliothek(root, hooks) {
         const url = await setLink(x.s)
         if (navigator.share) { try { await navigator.share({ title: x.titel, url }); return } catch {} }
         kopieren(url, tl)
-      } }, 'Teilen (Link)')
+      } }, symEl('senden'), 'Teilen (Link)')
       if (x.s.quelle) akt.append(
         h('div', { style: 'flex-basis:100%;font-size:13px;font-weight:600;color:var(--text-2)' }, 'Von deiner Lehrperson. Es wird automatisch aktualisiert und lässt sich nicht verändern.'),
-        h('button', { class: 'lnk', onclick: () => { const k = eigeneKopie(x.s); ui.meldung = '«' + k.titel + '» gespeichert. Diese Kopie kannst du bearbeiten.'; hooks.neu() } }, 'Als eigene Kopie speichern'), tl, weitere)
+        h('button', { class: 'lnk', onclick: () => { const k = eigeneKopie(x.s); ui.meldung = '«' + k.titel + '» gespeichert. Diese Kopie kannst du bearbeiten.'; hooks.neu() } }, symEl('sichern'), 'Als eigene Kopie speichern'), tl, weitere)
       else akt.append(h('label', { class: 'lbl' }, 'Fach ', sf), themaFeld(x, hooks),
         lpAn && x.s.lp && ungespeichert(x.s) ? h('button', { class: 'btn lp-btn', style: 'flex-basis:100%', onclick: async e => {
           e.target.disabled = true; e.target.textContent = 'Wird geschickt …'
@@ -144,22 +150,23 @@ export function renderBibliothek(root, hooks) {
           catch (f) { ui.meldung = 'Das hat nicht geklappt: ' + f.message }
           hooks.neu()
         } }, 'Änderung an die Klasse schicken') : null,
-        lpAn ? h('button', { class: 'lnk', onclick: () => { lehrerFokus(x.id); hooks.lehrer() } }, x.s.lp ? 'In weitere Klasse veröffentlichen' : 'In Klasse veröffentlichen') : null,
+        lpAn ? h('button', { class: 'lnk', onclick: () => { lehrerFokus(x.id); hooks.lehrer() } }, symEl('klassen'), x.s.lp ? 'In weitere Klasse veröffentlichen' : 'In Klasse veröffentlichen') : null,
         h('button', { class: 'lnk', onclick: () => { ui.edit = x.id; hooks.neu(); window.scrollTo(0, 0) } }, symEl('bearbeiten'), 'Bearbeiten'), tl, weitere,
-        h('button', { class: 'lnk', onclick: () => { ui.weg = x.s; deleteLibSet(x.id); hooks.neu() } }, 'Löschen'))
+        h('button', { class: 'lnk lnk-gefahr', onclick: () => { ui.weg = x.s; deleteLibSet(x.id); hooks.neu() } }, symEl('loeschen'), 'Löschen'))
     } else akt.append(loeschen('Aus Liste nehmen', () => hooks.vergiss(x.id)))
     const pause = istPausiert(x.titel)
     akt.prepend(h('button', { class: 'lnk', style: 'flex-basis:100%;text-align:left', onclick: () => {
       setzePause(x.titel, !pause)
       ui.meldung = pause ? '«' + x.titel + '» ist wieder auf dem Start.' : '«' + x.titel + '» ist vom Start genommen. Es bleibt hier in der Bibliothek.'
       hooks.neu()
-    } }, pause ? 'Wieder auf den Start' : 'Vom Start nehmen (fertig geübt)'))
+    } }, symEl(pause ? 'ueben' : 'pause'), pause ? 'Wieder auf den Start' : 'Vom Start nehmen (fertig geübt)'))
     const mehr = h('button', { class: 'bib-mehr', 'aria-label': 'Aktionen für «' + x.titel + '»', title: 'Aktionen', 'aria-expanded': 'false', onclick: () => { akt.hidden = !akt.hidden; mehr.classList.toggle('on', !akt.hidden); mehr.setAttribute('aria-expanded', String(!akt.hidden)) } }, '⋯')
     return h('div', { class: 'bib-row' + (pause ? ' pausiert' : '') },
       h('div', { class: 'bib-zeile' },
         h('div', { class: 'bib-main', role: 'button', tabindex: '0', onclick:() => x.kind === 'lib' ? hooks.oeffneLib(x.id) : hooks.oeffneLink(x.id) },
           h('div', { class: 'bib-t' }, x.s?.neu ? h('span', { class: 'neu-chip' }, 'NEU') : null, x.titel),
-          h('div', { class: 'bib-meta' }, h('span', { class: 'tab ' + TYP_INFO[x.typ].css }, TYP_INFO[x.typ].tab), (x.s?.quelle && x.fach ? x.fach + ' · ' : '') + x.n + ' ' + x.einheit + (x.created && !x.s?.quelle ? ' · ' + datum(x.created) : '') + (x.s?.lp && lpAn ? (ungespeichert(x.s) ? ' · Änderung noch nicht bei der Klasse' : ' · veröffentlicht') : '') + (pause ? ' · nicht auf dem Start' : ''))),
+          h('div', { class: 'bib-meta' }, h('span', { class: 'tab ' + TYP_INFO[x.typ].css }, TYP_INFO[x.typ].tab), (x.s?.quelle && x.fach ? x.fach + ' · ' : '') + x.n + ' ' + x.einheit + (x.created && !x.s?.quelle ? ' · ' + datum(x.created) : '') + (x.s?.lp && lpAn ? (ungespeichert(x.s) ? ' · Änderung noch nicht bei der Klasse' : ' · veröffentlicht') : '') + (pause ? ' · nicht auf dem Start' : '')),
+          x.beschaedigt ? h('div', { class: 'bib-defekt' }, (x.beschaedigt === 1 ? '1 Aufgabe ist' : x.beschaedigt + ' Aufgaben sind') + ' beschädigt und wird übersprungen. Unter «⋯» → «Bearbeiten» lässt sich das Set prüfen, oder du erstellst es neu.') : null),
         mehr),
       akt)
   }
@@ -270,7 +277,7 @@ export function renderBibliothek(root, hooks) {
         set.items = p.items; set.typ = p.items.every(i => i.t === 'karte') ? 'karten' : 'test'
         saveLibSet(set); hooks.neu()
       } }, 'Einfügen'), meldung)),
-      h('div', { style: 'font-size:13px;font-weight:600;color:var(--text-2);text-align:center;margin-top:6px' }, 'Hirnfutter · Stand ' + appStand())),
+      null),
     hooks.nav()))
   ui.weg = null // «Rückgängig» gilt nur bis zur nächsten Aktion
   ui.meldung = ''

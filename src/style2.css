@@ -33,7 +33,7 @@
 
 .nv .btn { display: flex; width: 100%; align-items: center; justify-content: center; gap: 8px; height: 50px; padding: 0 16px; border-radius: 10px; background: var(--accent); color: var(--accent-t); font-weight: 800; font-size: 16px; box-shadow: var(--sh-sm); }
 .nv .btn.ghost { background: var(--surface); color: var(--text); border: 1px solid var(--border); box-shadow: none; }
-.nv .btn.vio { background: var(--vio); } .nv .btn.blue { background: var(--blue); }
+.nv .btn.vio { background: var(--vio); color: #fffdfa; } .nv .btn.blue { background: var(--blue); color: #fffdfa; }
 .nv .btn:disabled { opacity: .5; cursor: default; }
 .nv .lnk { background: none; font-size: 13px; font-weight: 700; color: var(--text-2); padding: 6px 0; text-decoration: none; }
 
@@ -53,17 +53,17 @@
 
 .nv .in { width: 100%; font: inherit; font-size: 15px; padding: 10px 12px; border: 1px solid var(--border); border-radius: 10px; background: var(--surface); color: var(--text); }
 .nv textarea.in { min-height: 90px; resize: vertical; }
-.nv .inl { font: inherit; font-family: 'Bitter', serif; font-size: 18px; width: 96px; margin: 0 4px; padding: 4px 8px; border: 0; border-bottom: 2px solid var(--blue); background: var(--blue-l); border-radius: 6px 6px 0 0; color: var(--text); }
+.nv .inl { font: inherit; font-family: 'Bitter', serif; font-size: 18px; width: 96px; margin: 0 4px; padding: 4px 8px; border: 0; border-bottom: 2px solid var(--accent); background: #fbf3e4; border-radius: 6px 6px 0 0; color: var(--text); }
 .nv .opt { display: block; width: 100%; text-align: left; padding: 12px 14px; border-radius: 10px; border: 1px solid var(--border); border-bottom-width: 3px; background: var(--surface); font-family: 'Bitter', serif; font-size: 16px; line-height: 1.3; }
-.nv .opt.sel { border-color: var(--blue); background: var(--blue-l); }
+.nv .opt.sel { border-color: var(--accent); background: #fbf3e4; }
 .nv .opt.ok { background: var(--green-l); border-color: var(--green); }
 .nv .opt.no { background: var(--red-l); border-color: var(--red); }
 .nv .opt:disabled { cursor: default; }
 .nv .chip { display: inline-block; font-family: 'Bitter', serif; font-size: 18px; padding: 9px 13px; background: var(--surface); border: 1px solid var(--border); border-bottom-width: 3px; border-radius: 10px; cursor: pointer; }
-.nv .chip.sel { border-color: var(--blue); background: var(--blue-l); }
+.nv .chip.sel { border-color: var(--accent); background: #fbf3e4; }
 .nv .chip.used { opacity: .3; }
 .nv .wline { display: flex; flex-wrap: wrap; gap: 8px; padding: 14px; min-height: 60px; align-items: center; margin-top: 10px; }
-.nv .blank { font-family: 'Bitter', serif; font-size: 18px; min-width: 70px; border-bottom: 2px solid var(--blue); background: var(--blue-l); border-radius: 6px 6px 0 0; padding: 2px 8px; margin: 0 3px; }
+.nv .blank { font-family: 'Bitter', serif; font-size: 18px; min-width: 70px; border-bottom: 2px solid var(--accent); background: #fbf3e4; border-radius: 6px 6px 0 0; padding: 2px 8px; margin: 0 3px; }
 .nv .zrow { display: flex; gap: 8px; align-items: center; margin-bottom: 8px; }
 .nv .zto { flex: 1; padding: 12px 10px; border-radius: 10px; border: 1px dashed var(--border); font-family: 'Bitter', serif; color: var(--text-3); text-align: center; font-size: 15px; background: none; }
 .nv .zto.set { border-style: solid; color: var(--text); background: var(--surface); }
@@ -171,7 +171,7 @@
 .nv .bib-filter{display:flex;flex-direction:column;gap:8px}
 .nv .bib-chips{display:flex;gap:6px;overflow-x:auto;padding-bottom:2px;scrollbar-width:none}
 .nv .bib-chip{flex:none;border:1px solid var(--border);background:var(--surface);border-radius:999px;padding:6px 12px;font:700 13px/1 inherit;font-family:inherit;color:var(--text-2);min-height:34px}
-.nv .bib-chip.on{background:var(--blue-l);border-color:var(--blue);color:var(--blue)}
+.nv .bib-chip.on{background:#fbf3e4;border-color:var(--accent);color:var(--accent-hover)}
 .nv .bib-liste{display:flex;flex-direction:column;gap:10px}
 .nv .bib-grp{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .nv .bib-grp>summary{list-style:none;cursor:pointer;display:flex;justify-content:space-between;align-items:center;padding:12px 14px;font-weight:800;font-size:15px;min-height:44px}
@@ -187,7 +187,7 @@
 .nv .bib-meta{font-size:13px;font-weight:600;color:var(--text-2);margin-top:3px;display:flex;align-items:center;gap:8px}
 .nv .bib-meta .tab{position:static;margin:0;font-size:10px;padding:2px 7px;border-radius:6px;border-bottom:1px solid}
 .nv .bib-mehr{width:44px;height:44px;border:0;background:none;font-size:22px;font-weight:800;color:var(--text-2)}
-.nv .bib-mehr.on{color:var(--blue)}
+.nv .bib-mehr.on{color:var(--accent-hover)}
 .nv .bib-akt{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:4px 14px 12px;background:var(--surface-2)}
 .nv .bib-fach{height:36px;padding:0 8px;width:auto;font-size:15px}
 .nv .bib-imp>summary{cursor:pointer;font-weight:800;font-size:15px;padding:10px 0}
@@ -199,7 +199,7 @@
 .nv .vorschau-liste{display:flex;flex-direction:column;gap:8px;max-height:420px;overflow-y:auto;padding:2px}
 .nv .kk.vorschau{position:relative;padding-right:44px}
 .nv .vs-x{position:absolute;right:2px;top:2px;width:42px;height:42px;border:0;background:none;font-size:15px;font-weight:800;color:var(--text-2)}
-.fehler-knopf{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:12px;padding:14px 16px;margin-bottom:14px;border:1px solid #b6d1ee;border-bottom-width:3px;border-radius:14px;background:var(--blue-l,#e6f0fb);color:inherit;font:inherit;font-size:15px;min-height:56px}
+.fehler-knopf{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:12px;padding:14px 16px;margin-bottom:14px;border:1px solid #ecdcbf;border-bottom-width:3px;border-radius:14px;background:#fbf3e4;color:inherit;font:inherit;font-size:15px;min-height:56px}
 .fehler-knopf small{font-size:13px;font-weight:600;opacity:.75}
 .fehler-pfeil{font-size:22px;font-weight:800}
 .kw-aktiv{position:sticky;top:0;z-index:2;background:#fff6e8;border:1px solid #e3c896;border-radius:8px;padding:6px 10px;font-size:14px;font-weight:700;margin-bottom:6px}
@@ -308,7 +308,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .nv .bib-klasse-tag{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:var(--blue-l,#e6f0fb);color:var(--blue,#1f6fbf);border-radius:6px;padding:2px 6px;margin-left:8px;vertical-align:2px}
 .nv .lp-kopf{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px}
 .nv .lp-hinweis{font-size:15px;font-weight:600;color:var(--text-2);line-height:1.4}
-.nv .lp-klasse{background:var(--surface);border:1px solid var(--border);border-left:5px solid var(--blue,#1f6fbf);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
+.nv .lp-klasse{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
 .nv .lp-klasse.archiv{border-left-color:var(--border);opacity:.8}
 .nv .lp-klasse-kopf{display:flex;justify-content:space-between;align-items:flex-start;gap:12px}
 .nv .lp-klasse-name{font-family:'Bitter',Georgia,serif;font-size:18px;font-weight:600}
@@ -373,7 +373,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .pruef-zeile{display:flex;justify-content:space-between;align-items:center;gap:12px;font-size:15px}
 .pruef-zeile small{font-size:13px;font-weight:600;color:var(--text-2)}
 .pruef-in{font:inherit;font-weight:700;height:44px;border:1px solid var(--border,#e2d8cf);border-radius:10px;padding:0 10px;background:var(--bg,#faf6f0);color:inherit;max-width:170px}
-.due-badge.pruef-badge{background:#e6f0fb;color:#1f6fbf}
+.due-badge.pruef-badge{background:#fbe9c8;color:#6d4a0e}
 .pruef-vorbei{background:#fff6e8;border:1px solid #e3c896;border-radius:14px;padding:12px 14px;display:flex;flex-direction:column;gap:10px;font-size:15px;font-weight:600;line-height:1.4;margin-bottom:10px}
 .pruef-vorbei-akt{display:flex;gap:8px;flex-wrap:wrap}
 .hilfe-card{max-height:86vh;overflow-y:auto}
@@ -521,7 +521,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
   border: 1px solid #dfd6cb; background: #fffdfa; color: #62594f; cursor: pointer; padding: 0; }
 .vorlesen-knopf:hover { color: #be7100; border-color: #d28425; }
 .vorlesen-knopf .sym { width: 22px; height: 22px; margin: 0; }
-.vorlesen-knopf.spricht { background: #d28425; border-color: #d28425; color: #fffdfa; }
+.vorlesen-knopf.spricht { background: #d28425; border-color: #d28425; color: #292014; }
 @media (prefers-reduced-motion: no-preference) { .vorlesen-knopf.spricht .sym { animation: vorlesen-puls 1s ease-in-out infinite; } }
 @keyframes vorlesen-puls { 50% { transform: scale(1.12); } }
 
@@ -552,7 +552,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .rad-legende-icon { display: inline-flex; width: 18px; height: 18px; color: #9a6a2c; }
 .rad-legende-icon svg { width: 100%; height: 100%; }
 .rad-legende-fund { color: #7857a2; }
-.rad .btn.rad-knopf { width: 100%; max-width: 300px; min-height: 50px; background: #cb851f; color: #fffdfa; border: 1px solid #a56a18; border-bottom-width: 3px; border-radius: 12px; font: 800 16px/1.2 'Nunito', system-ui, sans-serif; box-shadow: 0 2px 3px rgba(65,44,15,.08); }
+.rad .btn.rad-knopf { width: 100%; max-width: 300px; min-height: 50px; background: #cb851f; color: #292014; border: 1px solid #a56a18; border-bottom-width: 3px; border-radius: 12px; font: 800 16px/1.2 'Nunito', system-ui, sans-serif; box-shadow: 0 2px 3px rgba(65,44,15,.08); }
 .rad .btn.rad-knopf:hover:not(:disabled) { background: #b67518; }
 .rad .btn.rad-knopf:disabled { opacity: 1; background: #f0e7d8; border-color: #d9c9ae; color: #76664f; cursor: default; }
 .rad-knopf:focus-visible, .rad-shop-knopf:focus-visible { outline: 3px solid #8553c7; outline-offset: 4px; }
@@ -608,3 +608,84 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .rad:not(.eingebettet) .rad-buehne { width: 220px; height: 220px; }
 .rad-nabe { overflow: hidden; }
 .rad-nabe .avatar.rad-nabe-hirn { width: 62px; border-radius: 0; background: none !important; flex: none; }
+
+/* Beschädigte Aufgaben in einem Set, Notfall-Anzeige */
+.bib-defekt { margin-top: 4px; font-size: 13px; font-weight: 600; line-height: 1.4; color: #8a4b1f; }
+.notfall h2 { font-family: 'Bitter', Georgia, serif; font-weight: 600; }
+.notfall .notfall-detail { font-size: 11px; color: #807971; max-width: 36ch; word-break: break-word; }
+
+/* Prüfungsfahrplan auf der Set-Seite */
+.plan { font-size: 15px; font-weight: 600; line-height: 1.45; color: #62594f; padding: 10px 12px; border-radius: 12px; background: #fbf3e4; border: 1px solid #ecdcbf; }
+.plan b { color: #292014; }
+.plan.plan-ok { background: #eaf6ea; border-color: #cfe6cf; color: #2f5f33; }
+
+/* Tagesleiste des Prüfungsfahrplans: Kästchen pro Tag */
+.pl-leiste { display: flex; gap: 5px; margin-top: 10px; }
+.pl-tag { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
+.pl-box { width: 100%; max-width: 34px; aspect-ratio: 1; height: auto; min-height: 14px; display: grid; place-items: center; border-radius: 6px;
+  border: 1.5px solid #dfd6cb; background: #fffdfa; font-size: 14px; font-weight: 800; line-height: 1; color: #fffdfa; }
+.pl-geuebt .pl-box, .pl-heute-fertig .pl-box { background: #d28425; border-color: #d28425; }
+.pl-aus .pl-box { background: #efe6db; border-color: #e3d8ca; }               /* ausgelassen: neutral, nicht rot */
+.pl-heute .pl-box { border: 2.5px solid #d28425; background: #fbf3e4; }
+.pl-heute-fertig .pl-box { box-shadow: 0 0 0 2px #fffdfa, 0 0 0 4px #d28425; }
+.pl-pruefung .pl-box { background: #fbe9c8; border: 2px solid #c18a19; font-size: 16px; }
+.pl-wt { font-size: 11px; font-weight: 700; color: #807971; white-space: nowrap; }
+.pl-heute .pl-wt, .pl-heute-fertig .pl-wt { color: #be7100; }
+.pl-pruefung .pl-wt { color: #292014; }
+.pl-ausblick { margin-top: 8px; font-size: 13px; font-weight: 600; line-height: 1.4; color: #62594f; }
+.plan-ok .pl-ausblick { color: #2f5f33; }
+.pl-pruefung .pl-box { color: #8a5a10; }
+.pl-pruefung .pl-box .sym { width: 62%; height: 62%; margin: 0; vertical-align: 0; }
+
+/* ── Audit: App ── */
+/* «Löschen» abgesetzt, rot, zuunterst im Menü */
+.nv .lnk.lnk-gefahr { color: #b54a46; flex-basis: 100%; justify-content: flex-start; margin-top: 4px; padding-top: 10px; border-top: 1px solid #dfd6cb; }
+.nv .lnk { display: inline-flex; align-items: center; }
+/* Tippflächen mindestens 44 px */
+.sammlung-link { min-height: 44px; }
+.nv .bib-akt details > summary, .nv .bib-akt .in, .nv .bib-akt select { min-height: 44px; }
+.kopf-shop { height: 44px; }
+/* Bibliothek unten: wie Karten statt lose Dreiecke */
+.nv .bib-imp { background: var(--surface); border: 1px solid var(--border); border-radius: 14px; padding: 0 14px; }
+.nv .bib-imp > summary { min-height: 48px; display: flex; align-items: center; gap: 8px; padding: 0; }
+.nv .bib-imp[open] { padding-bottom: 14px; }
+/* Einheitlicher Tastaturfokus */
+button:focus-visible, .btn:focus-visible, a:focus-visible, summary:focus-visible, input:focus-visible, select:focus-visible { outline: 3px solid #d28425; outline-offset: 2px; }
+
+/* ── Audit: Fahrplan als Wochenkalender ── */
+.plan { background: #fbf3e4; border: 1px solid #ecdcbf; color: #62594f; }
+.plan-kopf { font-size: 16px; color: #292014; }
+.plan-sub { font-size: 14px; font-weight: 600; color: #62594f; margin-top: 2px; }
+.plan-ok { color: #38853e; font-weight: 900; }
+.pl-kal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 12px; max-width: 330px; }
+.pl-kal .pl-wt { font-size: 12px; font-weight: 700; color: #62594f; text-align: center; }
+.pl-zelle { aspect-ratio: 1; min-height: 32px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; font-weight: 700;
+  border: 1.5px solid #c9bba8; background: #fffdfa; color: #62594f; font-variant-numeric: tabular-nums; }
+.pl-zelle.pl-leer { visibility: hidden; }
+.pl-zelle.pl-geuebt, .pl-zelle.pl-heute-fertig { background: #be7100; border-color: #be7100; color: #fffdfa; font-size: 16px; font-weight: 900; }
+.pl-zelle.pl-aus { background: #efe6db; border-style: dashed; color: #807971; }          /* ausgelassen: neutral, nicht rot */
+.pl-zelle.pl-heute { border: 2.5px solid #d28425; background: #fbf3e4; color: #292014; font-weight: 900; }
+.pl-zelle.pl-heute-fertig { box-shadow: 0 0 0 2px #fbf3e4, 0 0 0 4px #d28425; }
+.pl-zelle.pl-pruefung { background: #fbe9c8; border: 2px solid #c18a19; color: #8a5a10; }
+.pl-zelle.pl-pruefung .sym { width: 62%; height: 62%; margin: 0; }
+.pl-ausblick { margin-top: 10px; font-size: 13px; font-weight: 600; line-height: 1.4; color: #62594f; }
+@media (prefers-reduced-motion: no-preference) {
+  .pl-zelle.pl-heute-fertig { animation: pl-fuellen .32s cubic-bezier(.22, 1, .36, 1); }
+}
+@keyframes pl-fuellen { from { transform: scale(.7); opacity: .4; } to { transform: none; opacity: 1; } }
+/* Prüfungsdatum bei laufendem Fahrplan: eine Zeile mit «Ändern» */
+.pruef-kompakt > summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; font-size: 15px; }
+.pruef-kompakt > summary::-webkit-details-marker { display: none; }
+.pruef-kompakt .pruef-aendern { font-size: 14px; font-weight: 700; color: #be7100; text-decoration: underline; }
+.pruef-kompakt[open] .pruef-aendern { visibility: hidden; }
+.pruef-kompakt .pruef-in { margin: 6px 0; }
+/* Audit-Nachtrag: «getragen» dunkler, Text-Knöpfe 44 px */
+.laden-marke { color: #8a5a10; }
+.nv .lnk { min-height: 44px; }
+.nv .bib-klassen-kopf .btn { min-height: 44px; }
+/* Lange Knopftexte brechen um statt über den Rand zu ragen (alle Knöpfe, nicht nur einzelne) */
+.nv .btn { white-space: normal; height: auto; min-height: 50px; line-height: 1.25; text-align: center; padding-top: 8px; padding-bottom: 8px; }
+.install-hint .btn-sm { min-height: 44px; }
+/* Fahrplan mittig, wie die Knöpfe darunter */
+.plan { text-align: center; }
+.pl-kal { margin-left: auto; margin-right: auto; }

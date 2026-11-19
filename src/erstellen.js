@@ -267,7 +267,7 @@ export function renderErstellen(root, typ, hooks) {
   // ── Schritt 3: Antwort zurückbringen ──
   body.append(fertig(2, 'Bei der KI', cr.geteilt ? 'Foto und Auftrag an die KI gesendet' : cr.kopiert ? 'Auftrag kopiert' + (foto ? ', Foto angehängt' : '') : 'Auftrag noch nicht kopiert', () => geheZu(2), 'Nochmals'))
   const ta = h('textarea', { class: 'in code', style: 'min-height:90px', placeholder: 'Oder die Antwort von Hand hier einfügen …', oninput: e => { cr.answer = e.target.value; entwurfSichern() } }, cr.answer)
-  const einf = h('button', { class: 'btn ' + (cr.typ === 'test' ? 'blue' : ''), onclick: async () => {
+  const einf = h('button', { class: 'btn', onclick: async () => {
     let t = ''
     try { t = await navigator.clipboard.readText() } catch {}
     if (!t.trim()) { cr.err2 = 'Das Einfügen hat nicht geklappt. Füge die Antwort unten von Hand ein und tippe auf «' + fertigText() + '».'; cr.hand = true; return re() }
