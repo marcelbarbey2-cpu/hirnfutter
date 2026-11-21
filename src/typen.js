@@ -104,5 +104,7 @@ R.zahlen=(it,box,done)=>{
   box.append(card(prompt_(it.frage)),h('div',{style:'display:flex;gap:8px;align-items:center;margin:10px 0'},inp,h('span',{style:'font-weight:800'},it.einheit)),btn)};
 
 
-export function renderAufgabe(item, box, done) { const f = R[item.t]; if (!f) { box.append(h('div', null, 'Aufgabentyp nicht unterstützt: ' + item.t)); return false } f(item, box, r => { box.classList.add('geloest'); done(r) }); if (item.tabelle && item.t !== 'tabelle') box.insertBefore(tabelleEl(item.tabelle), box.children[1] || null); if (item.zeichnung) box.insertBefore(zeichnungEl(item.zeichnung), box.children[1] || null); return true }
+export function renderAufgabe(item, box, done) { const f = R[item.t]; if (!f) { box.append(h('div', null, 'Aufgabentyp nicht unterstützt: ' + item.t)); return false } let fertig = false
+  // Nur eine Auswertung pro Aufgabe: Doppeltes Antippen von «Prüfen» zeigt sonst die Rückmeldung mehrmals.
+  f(item, box, r => { if (fertig) return; fertig = true; box.classList.add('geloest'); box.querySelectorAll('button.btn').forEach(x => { x.hidden = true }); done(r) }); if (item.tabelle && item.t !== 'tabelle') box.insertBefore(tabelleEl(item.tabelle), box.children[1] || null); if (item.zeichnung) box.insertBefore(zeichnungEl(item.zeichnung), box.children[1] || null); return true }
 export const AUFGABENTYPEN = Object.keys(R)

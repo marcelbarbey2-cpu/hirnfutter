@@ -3,7 +3,7 @@
 // sonst würde «B» auf dem Blatt etwas anderes bedeuten als in der Eingabe.
 import { symEl } from './symbole.js'
 import { h, kopieren, kopierenMitKi } from './dom.js'
-import { fnv, nz, cmp, num, solText, TNAME, itemKey, frageText, promptErklaere, promptFehlerErklaerung, promptFehlerset, stichCheck, ohneKopf } from './format.js'
+import { fnv, nz, cmp, num, solText, TNAME, itemKey, frageText, promptErklaere, promptFehlerErklaerung, fehlerKnopfText, fehlerPortion, FEHLER_PORTION, promptFehlerset, stichCheck, ohneKopf } from './format.js'
 import { bewerte, gradeAus } from './fortschritt.js'
 import { tabelleEl } from './typen.js'
 import { zeichnungEl, bildText } from './zeichnung.js'
@@ -259,7 +259,7 @@ export function renderSatz(root, deck, hooks) {
         !ok && r.kriterien?.length ? h('div', { style: 'font-weight:600' }, r.kriterien.map(k => '· ' + k).join('  ')) : null,
         c.erklaerung ? h('div', { style: 'margin-top:4px;font-weight:600' }, c.erklaerung) : null)))
     if (!ok) {
-      const eb = h('button', { class: 'btn ghost', style: 'height:42px', onclick: () => kopierenMitKi(promptErklaere(c, r.given, ctx), eb) }, 'Erkläre mir das (Auftrag kopieren)')
+      const eb = h('button', { class: 'btn ghost zwei-zeilen', onclick: () => kopierenMitKi(promptErklaere(c, r.given, ctx), eb) }, 'Erkläre mir das\n(Auftrag kopieren)')
       fb.append(eb)
     }
     if (S.modus === 'blatt' && itemNode) fb.append(h('button', { class: 'lnk', onclick: () => { S.res.delete(c.id); itemNode.replaceWith(itemBau(c, itemNode.dataset.nr)); zusammenfassung() } }, 'Nochmal versuchen'))
@@ -403,8 +403,15 @@ export function renderSatz(root, deck, hooks) {
       S.bonus?.neueMarke ? h('div', { class: 'serie-chip' }, '🔥 ' + S.bonus.neueMarke + ' Tage in Folge') : null), nb, noteBox)
     const fehler = cards.map(c => ({ c, r: S.res.get(c.id) })).filter(x => x.r && x.r.r !== 'richtig')
     if (fehler.length) {
-      const proto = fehler.map((x, i) => (i + 1) + '. Aufgabe: ' + frageText(x.c) + '\n   Seine Antwort: ' + (x.r.selbst ? '(Selbstkontrolle: ' + (x.r.r === 'beinahe' ? 'nur teilweise gewusst' : x.r.r ? 'nicht gewusst' : 'nicht bewertet') + ')' : (!x.r.given || x.r.given === '–' ? '(keine)' : x.r.given)) + '\n   Richtig: ' + solText(x.c)).join('\n')
-      const eb = h('button', { class: 'btn ghost', onclick: () => kopierenMitKi(promptFehlerErklaerung(deck.name, proto, ctx), eb) }, 'Alle Fehler erklären lassen (Auftrag kopieren)')
+      const zeilen = fehler.map(x => 'Aufgabe: ' + frageText(x.c) + '\n   Seine Antwort: ' + (x.r.selbst ? '(Selbstkontrolle: ' + (x.r.r === 'beinahe' ? 'nur teilweise gewusst' : x.r.r ? 'nicht gewusst' : 'nicht bewertet') + ')' : (!x.r.given || x.r.given === '–' ? '(keine)' : x.r.given)) + '\n   Richtig: ' + solText(x.c))
+      const proto = zeilen.map((z, i) => (i + 1) + '. ' + z).join('\n') // ganzes Protokoll fürs Übungsset
+      let ab = 0
+      const eb = h('button', { class: 'btn ghost zwei-zeilen', onclick: () => {
+        if (ab >= zeilen.length) ab = 0
+        kopierenMitKi(promptFehlerErklaerung(deck.name, fehlerPortion(zeilen, ab), ctx), eb)
+        ab += FEHLER_PORTION
+        if (zeilen.length > FEHLER_PORTION) setTimeout(() => { if (eb.isConnected) eb.textContent = fehlerKnopfText(ab, zeilen.length) }, 1900)
+      } }, fehlerKnopfText(0, zeilen.length))
       unten.append(eb, h('button', { class: 'btn ghost', onclick: () => hooks.folge(promptFehlerset(proto, ctx), { titel: deck.name, fach: deck.fach, klasse: deck.klasse }) }, 'Übungsset zu den Fehlern erstellen'))
     }
     unten.append(h('button', { class: 'btn ghost', onclick: () => zeichne(true) }, 'Neu beginnen'))

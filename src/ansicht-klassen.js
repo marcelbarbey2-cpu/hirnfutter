@@ -67,6 +67,32 @@ function anleitung(hooks, offen) {
 }
 
 const L = { daten: null, laedt: false, fehler: '', meldung: '', offen: new Set(), verw: null, neuCode: null }
+// Klassen ordnen: nach Typ (Sek E, B, P, übrige), darin nach Stufe und Buchstabe.
+const KLASSE_RE = /^(\d{2})_(\d{2})_sek_([ebp])_(iii|ii|i|[123])([a-z])$/i
+const STUFE_NR = { i: 1, ii: 2, iii: 3 }
+function klasseTeile(name) {
+  const m = KLASSE_RE.exec(String(name || '').trim())
+  if (!m) return { typ: 'X', kurz: name || '', ord: String(name || '').toLowerCase(), jahr: '' }
+  const typ = m[3].toUpperCase(), st = STUFE_NR[m[4].toLowerCase()] || Number(m[4])
+  const kurz = typ === 'B' ? m[4] + m[5].toUpperCase() : m[4].toUpperCase() + m[5].toLowerCase()
+  return { typ, kurz, ord: st + m[5].toLowerCase() + m[1], jahr: m[1] + '_' + m[2] }
+}
+const GRUPPEN = [['E', 'Sek E'], ['B', 'Sek B'], ['P', 'Sek P'], ['X', 'Kurse und andere']]
+/** Klassen nach Typ gruppieren und sortieren: [[titel, [k, …]], …], leere Gruppen fallen weg. */
+function gruppiert(liste, name = k => k.name) {
+  const mit = liste.map(k => ({ k, t: klasseTeile(name(k)) }))
+  return GRUPPEN.map(([typ, titel]) => [titel, mit.filter(x => x.t.typ === typ).sort((a, b) => a.t.ord.localeCompare(b.t.ord, 'de', { numeric: true })).map(x => x.k)]).filter(([, l]) => l.length)
+}
+/** Nur eine Zeile offen: Beim Öffnen einer Zeile die anderen derselben Liste schliessen. */
+function einzelnOffen(det, offen, key) {
+  det.addEventListener('toggle', () => {
+    if (det.open) {
+      offen.add(key)
+      det.closest('.lp-tab')?.querySelectorAll('details.lp-zeile[open]').forEach(d => { if (d !== det) d.open = false })
+    } else offen.delete(key)
+  })
+}
+
 const anz = (n, typ) => n + (typ === 'karten' ? (n === 1 ? ' Karte' : ' Karten') : (n === 1 ? ' Aufgabe' : ' Aufgaben'))
 const tage = t => Math.max(0, Math.ceil((t + (L.daten?.papierkorbTage || 30) * 86400000 - Date.now()) / 86400000))
 
@@ -138,17 +164,23 @@ export function renderLehrer(root, hooks) {
   if (L.meldung) seite.append(h('div', { class: 'fb ' + (L.meldung.art === 'no' ? 'no' : 'ok') }, h('span', null, L.meldung.art === 'no' ? '✕' : '✓'), h('div', null, L.meldung.text)))
   L.meldung = ''
 
+  if (L.fokus) L.reiter = 'pub'
+  const reiter = L.reiter === 'verw' && !D.lehrer.admin ? 'klassen' : (L.reiter || 'klassen')
+  const tab = (id, text, icon) => h('button', { class: 'bl-seg' + (reiter === id ? ' on' : ''), 'aria-pressed': String(reiter === id), onclick: () => { L.reiter = id; zeichne(); window.scrollTo(0, 0) } }, symEl(icon), text)
   seite.append(h('div', { class: 'lp-kopf' },
     h('div', null, h('div', { class: 'lbl' }, 'Angemeldet als'), h('div', { style: 'font-weight:800;font-size:18px' }, D.lehrer.name),
       D.lehrer.admin ? h('div', { class: 'lp-meta' }, 'Verwaltung: Du wirst abgemeldet, sobald du die App schliesst.') : null),
     h('button', { class: 'lnk', onclick: () => { lehrerAbmelden(); L.daten = null; hooks.weg() } }, symEl('abmelden'), 'Abmelden')))
+  seite.append(h('div', { class: 'bl-modus lp-reiter' }, tab('klassen', 'Klassen', 'klassen'), tab('pub', 'Veröffentlichen', 'senden'), D.lehrer.admin ? tab('verw', 'Verwaltung', 'code') : null))
   // Die Anleitung ist offen, solange es noch keine Klasse gibt, und gleich nach der Anmeldung.
-  seite.append(anleitung(hooks, L.anleitung || !klassen.length))
+  if (reiter === 'klassen') seite.append(anleitung(hooks, L.anleitung || !klassen.length))
   L.anleitung = false
+
+  const schuljahr = (() => { const d = new Date(), y = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1, zz = n => String(n % 100).padStart(2, '0'); return zz(y) + '_' + zz(y + 1) })()
+  if (reiter === 'klassen') {
 
   // Klassen
   // Klassenname: auswählen statt tippen. Das Schuljahr setzt die App, der Name zählt danach jedes Jahr von selbst hoch.
-  const schuljahr = (() => { const d = new Date(), y = d.getMonth() >= 7 ? d.getFullYear() : d.getFullYear() - 1, zz = n => String(n % 100).padStart(2, '0'); return zz(y) + '_' + zz(y + 1) })()
   const wahl = (wert, opts) => h('select', { class: 'in', onchange: () => neuZeigen() }, opts.map(([v, t]) => h('option', { value: v, selected: v === wert }, t)))
   const neuArt = wahl('E', [['E', 'Sek E'], ['B', 'Sek B'], ['P', 'Sek P'], ['X', 'Kurs oder anderer Name']])
   const neuStufe = wahl('1', [['1', '1. Sek'], ['2', '2. Sek'], ['3', '3. Sek']])
@@ -174,7 +206,11 @@ export function renderLehrer(root, hooks) {
   neuName.addEventListener('keydown', e => { if (e.key === 'Enter') neuKnopf.click() })
   seite.append(h('h2', { id: 'lp-klassen' }, 'Klassen (' + klassen.length + ')'))
   if (!klassen.length) seite.append(h('div', { class: 'lp-hinweis' }, 'Leg eine Klasse an oder tritt einer bestehenden bei. Die Schüler brauchen pro Klasse nur einen Code.'))
-  for (const k of klassen) seite.append(klasseKarte(k))
+  const aktiv = klassen.filter(k => !k.archiviert), archiv = klassen.filter(k => k.archiviert)
+  const liste = h('div', { class: 'lp-tab' })
+  for (const [titel, ks] of gruppiert(aktiv)) liste.append(h('div', { class: 'lp-gruppe' }, titel + ' (' + ks.length + ')'), ...ks.map(klasseKarte))
+  if (archiv.length) liste.append(h('details', { class: 'lp-det' }, h('summary', null, 'Archiviert (' + archiv.length + ')'), h('div', { class: 'lp-tab' }, ...archiv.map(klasseKarte))))
+  if (klassen.length) seite.append(liste)
   const beiIn = h('input', { class: 'in', placeholder: 'Klassencode, z. B. K7Q 4MP', maxlength: 9, autocapitalize: 'characters', autocomplete: 'off' })
   const beiKnopf = h('button', { class: 'btn ghost', style: 'height:46px', onclick: () => { if (!beiIn.value.trim()) return beiIn.focus(); tu(async () => { const k = await klasseBeitretenLp(beiIn.value); L.meldung = null; L.beigetreten = k.name }, null) } }, 'Beitreten')
   beiIn.addEventListener('keydown', e => { if (e.key === 'Enter') beiKnopf.click() })
@@ -185,6 +221,7 @@ export function renderLehrer(root, hooks) {
         h('div', { class: 'lp-wahl3' }, neuArt, neuStufe, neuBuch), neuName, neuVorschau, neuKnopf)),
     h('details', { class: 'lp-det', open: !klassen.length }, h('summary', null, 'Bestehender Klasse beitreten'),
       h('div', { class: 'lp-neu' }, h('div', { class: 'lp-hinweis' }, 'Du unterrichtest ein Fach in einer Klasse, die schon einen Code hat? Gib ihn ein. Danach legst du deine Sets in dieselbe Klasse, und die Schüler brauchen keinen zweiten Code.'), beiIn, beiKnopf)))
+  }
 
   function klasseKarte(k) {
     const ich = D.lehrer.id
@@ -205,18 +242,17 @@ export function renderLehrer(root, hooks) {
           h('div', { class: 'lp-set-t' }, st.titel, h('span', { class: 'lp-meta' }, [st.fach, st.thema].filter(Boolean).map(x => x + ' · ').join('') + anz(st.n, st.typ) + (e.sichtbar ? '' : ' · ausgeblendet'))),
           h('button', { class: 'lnk', onclick: () => tu(() => klasseAendern(k.code, { sets: eigeneEintraege().map(x => x.id === e.id ? { ...x, sichtbar: !e.sichtbar } : x) })) }, e.sichtbar ? 'Für Schüler ausblenden' : 'Für Schüler wieder zeigen'),
           h('button', { class: 'lnk', onclick: () => tu(() => klasseAendern(k.code, { sets: eigeneEintraege().filter(x => x.id !== e.id) }), '«' + st.titel + '» aus der Klasse genommen.') }, 'Freigabe für diese Klasse entfernen'))
-      }) : h('div', { class: 'lp-hinweis' }, 'Von dir noch keine Sets. Veröffentliche unten ein Set in diese Klasse.'),
+      }) : h('div', { class: 'lp-hinweis' }, 'Von dir noch keine Sets. Unter «Veröffentlichen» legst du ein Set in diese Klasse.'),
       andere.length ? h('div', { class: 'lbl', style: 'margin-top:8px' }, 'Von anderen Lehrpersonen') : null,
       ...andere.map(e => h('div', { class: 'lp-set fremd' + (e.sichtbar ? '' : ' aus') },
         h('div', { class: 'lp-set-t' }, e.meta.titel, h('span', { class: 'lp-meta' }, [e.meta.fach, e.meta.thema, nameVon(e.lp), anz(e.meta.n, e.meta.typ)].filter(Boolean).join(' · ') + (e.sichtbar ? '' : ' · ausgeblendet'))))))
     const leitest = k.leitest
-    const det = h('details', { class: 'lp-det', open: L.offen.has(k.code) },
-      h('summary', null, 'Sets in der Klasse (' + sichtbarAlle + ')'), setsListe,
+    const det = h('div', { class: 'lp-zeile-inhalt' },
+      h('div', { class: 'lbl', style: 'margin-top:6px' }, 'Sets in der Klasse (' + sichtbarAlle + ')'), setsListe,
       h('div', { class: 'lp-akt' },
         leitest ? h('label', { class: 'lp-umben' }, nameIn, h('button', { class: 'lnk', onclick: () => { const n = nameIn.value.trim(); if (n && n !== k.name) tu(() => klasseAendern(k.code, { name: n }), 'Umbenannt.') } }, 'Umbenennen')) : null,
         leitest ? h('button', { class: 'lnk', onclick: () => tu(() => klasseAendern(k.code, { archiviert: !k.archiviert }), k.archiviert ? 'Klasse wieder aktiv.' : 'Klasse archiviert. Der Code gilt nicht mehr, die Sets bleiben bei den Lehrpersonen.') }, k.archiviert ? 'Wieder aktivieren' : 'Archivieren') : null,
         leitest ? loesch : verlass))
-    det.addEventListener('toggle', () => det.open ? L.offen.add(k.code) : L.offen.delete(k.code))
     const lehrerNamen = k.lehrer.map(nameVon).filter(Boolean)
     // Neues Schuljahr: Die Sets vom letzten Jahr sind noch sichtbar. Einmal fragen, ob sie ausgeblendet werden sollen.
     const jahrKey = 'zk:jahr:' + k.code
@@ -230,16 +266,22 @@ export function renderLehrer(root, hooks) {
           h('button', { class: 'btn ghost lp-btn', onclick: () => { jahrMerken(); tu(() => klasseAendern(k.code, { sets: eigeneEintraege().map(x => ({ ...x, sichtbar: false })) }), 'Ausgeblendet. Was du wieder brauchst, blendest du unter «Sets in der Klasse» einzeln ein.') } }, 'Alle meine Sets ausblenden'),
           h('button', { class: 'lnk', onclick: () => { jahrMerken(); zeichne() } }, 'So lassen'))
       : null
-    return h('div', { class: 'lp-klasse' + (k.archiviert ? ' archiv' : '') },
-      h('div', { class: 'lp-klasse-kopf' },
-        h('div', null, h('div', { class: 'lp-klasse-name' }, k.name),
-          h('div', { class: 'lp-meta' }, k.archiviert ? 'Archiviert: Schüler können den Code nicht mehr verwenden' : sichtbarAlle + (sichtbarAlle === 1 ? ' Set' : ' Sets') + ' sichtbar für die Schüler'),
-          h('div', { class: 'lp-meta' }, (leitest ? 'Du leitest die Klasse' : 'Geleitet von ' + nameVon(k.ersteller)) + (lehrerNamen.length > 1 ? ' · ' + lehrerNamen.length + ' Lehrpersonen: ' + lehrerNamen.join(', ') : ''))),
-        h('div', { class: 'lp-code' + (k.archiviert ? ' aus' : '') }, zeigeCode(k.code))),
-      k.archiviert ? null : cb, jahrBox, det)
+    const t = klasseTeile(k.name)
+    const zeile = h('details', { class: 'lp-zeile' + (k.archiviert ? ' archiv' : ''), open: L.offen.has(k.code) },
+      h('summary', null,
+        h('span', { class: 'lp-zeile-name' }, t.kurz, t.jahr && t.jahr !== schuljahr ? h('small', null, ' ' + t.jahr.replace('_', '/')) : null),
+        h('span', { class: 'lp-zeile-meta' }, (k.archiviert ? 'archiviert' : sichtbarAlle + (sichtbarAlle === 1 ? ' Set' : ' Sets')) + (leitest ? '' : ' · ' + nameVon(k.ersteller)),
+          jahrBox ? h('span', { class: 'lp-zeile-neu' }, 'Neues Schuljahr') : null),
+        h('span', { class: 'lp-code klein' + (k.archiviert ? ' aus' : '') }, zeigeCode(k.code))),
+      h('div', { class: 'lp-zeile-body' },
+        h('div', { class: 'lp-meta' }, k.name + ' · ' + (leitest ? 'Du leitest die Klasse' : 'Geleitet von ' + nameVon(k.ersteller)) + (lehrerNamen.length > 1 ? ' · ' + lehrerNamen.length + ' Lehrpersonen: ' + lehrerNamen.join(', ') : '')),
+        k.archiviert ? h('div', { class: 'lp-meta' }, 'Archiviert: Schüler können den Code nicht mehr verwenden.') : cb, jahrBox, det))
+    einzelnOffen(zeile, L.offen, k.code)
+    return zeile
   }
 
   // Veröffentlichen: das in der Bibliothek gewählte Set zuoberst, sonst alle eigenen Sets nach Fach und Thema.
+  if (reiter === 'pub') {
   const fokus = L.fokus && lokal.find(s => s.id === L.fokus)
   L.fokus = null
   seite.append(h('h2', { id: 'lp-pub' }, 'Sets veröffentlichen'))
@@ -304,9 +346,11 @@ export function renderLehrer(root, hooks) {
     seite.append(det)
   }
 
+  }
+
   // Papierkorb
   const kWeg = D.klassen.filter(k => k.geloescht), sWeg = D.sets.filter(s => s.geloescht)
-  if (kWeg.length || sWeg.length) {
+  if (reiter === 'klassen' && (kWeg.length || sWeg.length)) {
     seite.append(h('details', { class: 'lp-det' }, h('summary', null, 'Papierkorb (' + (kWeg.length + sWeg.length) + ')'),
       h('div', { class: 'lp-hinweis' }, 'Gelöschtes bleibt ' + D.papierkorbTage + ' Tage hier und verschwindet danach endgültig.'),
       ...kWeg.map(k => h('div', { class: 'lp-set' }, h('div', { class: 'lp-set-t' }, 'Klasse ' + k.name, h('span', { class: 'lp-meta' }, 'noch ' + tage(k.geloescht) + ' Tage')),
@@ -315,7 +359,7 @@ export function renderLehrer(root, hooks) {
         h('button', { class: 'lnk', onclick: () => tu(() => setWiederherstellen(s.id), '«' + s.titel + '» wiederhergestellt.') }, 'Wiederherstellen')))))
   }
 
-  if (D.lehrer.admin) {
+  if (D.lehrer.admin && reiter === 'verw') {
     const warn = h('div')
     seite.append(warn)
     serverPasst().then(ok => { if (ok === false) warn.append(h('div', { class: 'fb near' }, h('span', null, '!'), h('div', null, 'Der Server bei Cloudflare ist älter als diese App. Füg den neuen Code aus server/worker.js beim Worker «hirnfutter-server» ein, sonst fehlen einzelne Funktionen.'))) })
@@ -324,7 +368,7 @@ export function renderLehrer(root, hooks) {
   seite.append(h('button', { class: 'lnk', style: 'margin-top:8px', onclick: () => { L.daten = null; zeichne() } }, '↻ Neu laden'))
 
   function verwaltung() {
-    const box = h('div', { class: 'lp-verw' }, h('h2', { style: 'margin:0' }, 'Verwaltung: Lehrpersonen'),
+    const box = h('div', { class: 'lp-verw lp-tab' }, h('h2', { style: 'margin:0' }, 'Lehrpersonen'),
       h('div', { class: 'lp-hinweis' }, 'Hier stellst du Lehrercodes für Kolleginnen und Kollegen aus. Ein Code wird nur einmal angezeigt: Schreib ihn ab oder schick ihn gleich weiter.'))
     if (L.neuCode) {
       const cb = h('button', { class: 'btn ghost lp-btn', onclick: () => kopieren(L.neuCode.code, cb) }, 'Code kopieren')
@@ -358,23 +402,37 @@ export function renderLehrer(root, hooks) {
         if (!loeschen.dataset.a) { loeschen.dataset.a = 1; loeschen.textContent = 'Endgültig löschen' + (folgen.length ? ' (' + folgen.join('; ') + ')' : '') + '? Das lässt sich nicht rückgängig machen. Sperren geht auch.'; return }
         tu(async () => { await verwLoeschen(p.id) }, p.name + ' ist gelöscht.')
       } }, 'Löschen')
-      box.append(h('div', { class: 'lp-set' + (p.aktiv ? '' : ' aus') },
-        h('div', { class: 'lp-set-t' }, p.name, h('span', { class: 'lp-meta' }, (p.aktiv ? '' : 'gesperrt · ') + p.klassen + (p.klassen === 1 ? ' Klasse' : ' Klassen') + ' · ' + p.sets + (p.sets === 1 ? ' Set' : ' Sets'))),
-        h('button', { class: 'lnk', onclick: () => tu(() => verwSperren(p.id, !p.aktiv), p.name + (p.aktiv ? ' gesperrt.' : ' entsperrt.')) }, p.aktiv ? 'Sperren' : 'Entsperren'),
-        ersetzen, loeschen,
-        null))
+      const pz = h('details', { class: 'lp-zeile' + (p.aktiv ? '' : ' archiv'), open: L.offen.has('lp|' + p.id) },
+        h('summary', null, h('span', { class: 'lp-zeile-name' }, p.name),
+          h('span', { class: 'lp-zeile-meta' }, (p.aktiv ? '' : 'gesperrt · ') + p.klassen + (p.klassen === 1 ? ' Klasse' : ' Klassen') + ' · ' + p.sets + (p.sets === 1 ? ' Set' : ' Sets'))),
+        h('div', { class: 'lp-zeile-body lp-akt' },
+          h('button', { class: 'lnk', onclick: () => tu(() => verwSperren(p.id, !p.aktiv), p.name + (p.aktiv ? ' gesperrt.' : ' entsperrt.')) }, p.aktiv ? 'Sperren' : 'Entsperren'),
+          ersetzen, loeschen))
+      einzelnOffen(pz, L.offen, 'lp|' + p.id)
+      box.append(pz)
     }
     // Alle Klassen der Schule auf einen Blick: Code, Leitung, übergeben, löschen.
     const alle = [], gesehen = new Set()
     for (const p of liste) for (const k of p.klassenListe || []) if (k.leitet && !gesehen.has(k.code)) { gesehen.add(k.code); alle.push({ ...k, leiter: p }) }
     for (const k of D.klassen) if (k.ersteller === D.lehrer.id && !gesehen.has(k.code)) { gesehen.add(k.code); alle.push({ code: k.code, name: k.name, lehrer: k.lehrer, archiviert: !!k.archiviert, geloescht: !!k.geloescht, leiter: { id: D.lehrer.id, name: D.lehrer.name } }) }
-    alle.sort((x, y) => x.name.localeCompare(y.name, 'de', { numeric: true }))
     box.append(h('h2', { style: 'margin:10px 0 0' }, 'Alle Klassen (' + alle.filter(k => !k.geloescht).length + ')'))
     if (!alle.length) box.append(h('div', { class: 'lp-hinweis' }, 'Noch keine Klassen.'))
-    for (const k of alle) {
-      if (k.geloescht) { box.append(h('div', { class: 'lp-vk' },
+    // Suche: blendet Zeilen aus, ohne neu zu zeichnen (der Cursor bleibt im Feld)
+    const suchfeld = h('input', { class: 'in', type: 'search', placeholder: 'Klasse, Lehrperson oder Code suchen …', value: L.suche || '', autocomplete: 'off', 'aria-label': 'Klassen durchsuchen' })
+    const filtern = () => {
+      const q = suchfeld.value.trim().toLowerCase().replace(/\s+/g, ' ')
+      L.suche = suchfeld.value
+      box.querySelectorAll('.lp-vk-zeile').forEach(z => { z.hidden = !!q && !z.dataset.such.includes(q) })
+      box.querySelectorAll('.lp-gruppe.vk').forEach(g => { let n = g.nextElementSibling, irgend = false; while (n && !n.classList.contains('lp-gruppe')) { if (!n.hidden) irgend = true; n = n.nextElementSibling } g.hidden = !irgend })
+    }
+    suchfeld.addEventListener('input', filtern)
+    if (alle.length > 6) box.append(suchfeld)
+    const vkZeile = k => {
+      const t = klasseTeile(k.name)
+      const such = [k.name, anzeigeName(k.name), t.kurz, k.leiter.name, zeigeCode(k.code), k.code].join(' ').toLowerCase()
+      if (k.geloescht) return h('div', { class: 'lp-vk lp-vk-zeile', 'data-such': such },
         h('span', null, k.name, h('span', { class: 'lp-meta' }, 'im Papierkorb · geleitet von ' + k.leiter.name)),
-        h('button', { class: 'lnk', onclick: () => tu(() => klasseWiederherstellen(k.code), '«' + k.name + '» wiederhergestellt.') }, 'Wiederherstellen'))); continue }
+        h('button', { class: 'lnk', onclick: () => tu(() => klasseWiederherstellen(k.code), '«' + k.name + '» wiederhergestellt.') }, 'Wiederherstellen'))
       const andere = liste.filter(x => x.id !== k.leiter.id && x.aktiv)
       const wahl = h('select', { class: 'in', style: 'height:36px;font-size:13px;width:auto' }, h('option', { value: '' }, 'Leitung übergeben an …'), andere.map(x => h('option', { value: x.id }, x.name)))
       wahl.addEventListener('change', () => { if (wahl.value) tu(() => verwUebergeben(k.code, wahl.value), '«' + k.name + '» wird jetzt von ' + andere.find(x => x.id === wahl.value).name + ' geleitet.') })
@@ -382,11 +440,21 @@ export function renderLehrer(root, hooks) {
         if (!weg.dataset.a) { weg.dataset.a = 1; weg.textContent = 'Wirklich löschen? Die Schüler verlieren den Zugang, die Sets aller Lehrpersonen verschwinden aus der Klasse. 30 Tage im Papierkorb.'; return }
         tu(() => klasseLoeschen(k.code), '«' + k.name + '» liegt im Papierkorb. Unter «Alle Klassen» lässt sie sich 30 Tage lang wiederherstellen.')
       } }, 'Klasse löschen')
-      box.append(h('div', { class: 'lp-vk' },
-        h('span', null, k.name, h('span', { class: 'lp-meta' }, 'geleitet von ' + k.leiter.name + ((k.lehrer || []).length > 1 ? ' · ' + k.lehrer.length + ' Lehrpersonen' : '') + (k.archiviert ? ' · archiviert' : ''))),
-        h('span', { class: 'lp-code' + (k.archiviert ? ' aus' : ''), style: 'font-size:16px;padding:5px 8px' }, zeigeCode(k.code)),
-        andere.length ? wahl : null, weg, verwSets(k)))
+      const z = h('details', { class: 'lp-zeile lp-vk-zeile' + (k.archiviert ? ' archiv' : ''), 'data-such': such, open: L.offen.has('vk|' + k.code) },
+        h('summary', null,
+          h('span', { class: 'lp-zeile-name' }, t.kurz, t.jahr && t.jahr !== schuljahr ? h('small', null, ' ' + t.jahr.replace('_', '/')) : null),
+          h('span', { class: 'lp-zeile-meta' }, k.leiter.name + ((k.lehrer || []).length > 1 ? ' +' + (k.lehrer.length - 1) : '') + (k.archiviert ? ' · archiviert' : '')),
+          h('span', { class: 'lp-code klein' + (k.archiviert ? ' aus' : '') }, zeigeCode(k.code))),
+        h('div', { class: 'lp-zeile-body' },
+          h('div', { class: 'lp-meta' }, k.name + ' · geleitet von ' + k.leiter.name + ((k.lehrer || []).length > 1 ? ' · ' + k.lehrer.length + ' Lehrpersonen' : '')),
+          h('div', { class: 'lp-akt' }, andere.length ? wahl : null, weg), verwSets(k)))
+      einzelnOffen(z, L.offen, 'vk|' + k.code)
+      return z
     }
+    for (const [titel, ks] of gruppiert(alle.filter(k => !k.geloescht))) box.append(h('div', { class: 'lp-gruppe vk' }, titel + ' (' + ks.length + ')'), ...ks.map(vkZeile))
+    const imKorb = alle.filter(k => k.geloescht)
+    if (imKorb.length) box.append(h('div', { class: 'lp-gruppe vk' }, 'Papierkorb (' + imKorb.length + ')'), ...imKorb.map(vkZeile))
+    if (suchfeld.value) filtern()
     return box
   }
 

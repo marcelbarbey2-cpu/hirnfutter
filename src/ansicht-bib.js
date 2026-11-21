@@ -2,7 +2,7 @@
 import { h, kopieren } from './dom.js'
 import { parseAnswer, TNAME, MIX, frageText, solText } from './format.js'
 import { getLib, getLibSet, saveLibSet, updateLibSet, deleteLibSet, neueId, libDeck } from './bibliothek.js'
-import { getSets, sicherung, wiederherstellen, sicherungInfo, setsAufGeraet, istPausiert, setzePause, sicherungGemacht } from './storage.js'
+import { sicherung, wiederherstellen, sicherungInfo, setsAufGeraet, istPausiert, setzePause, sicherungGemacht } from './storage.js'
 import { setLink } from './teilen.js'
 import { getKlassen, klasseVerlassen, alleAbgleichen, eigeneKopie, serverBereit, zeigeCode, getLehrercode, anzeigeName, ungespeichert, veroeffentlichen, appStand } from './klassen.js'
 import { klassencodeDialog, lehrerFokus } from './ansicht-klassen.js'
@@ -101,7 +101,6 @@ export function renderBibliothek(root, hooks) {
   const meldung = h('div')
   const imp = h('textarea', { class: 'in code', placeholder: 'Set als Text oder Link hier einfügen' })
   const lib = getLib()
-  const links = getSets()
   const loeschen = (text, fn) => { const b = h('button', { class: 'lnk', onclick: () => { if (b.dataset.a) fn(); else { b.dataset.a = '1'; b.textContent = 'Wirklich?' } } }, text); return b }
   const datum = t => t ? new Date(t).toLocaleDateString('de-CH', { day: 'numeric', month: 'numeric' }) : ''
 
@@ -113,7 +112,6 @@ export function renderBibliothek(root, hooks) {
     const typ = s.typ === 'karten' ? 'karten' : 'test'
     alle.push({ id: s.id, kind: 'lib', typ, titel: d.name, fach: s.fach || '', n, beschaedigt: d.beschaedigt, einheit: typ === 'karten' ? (n === 1 ? 'Karte' : 'Karten') : (n === 1 ? 'Aufgabe' : 'Aufgaben'), created: s.created || 0, s })
   }
-  for (const e of links) alle.push({ id: e.name, kind: 'link', typ: 'karten', titel: e.name, fach: '', n: e.cards.length, einheit: 'Karten', created: 0, e })
 
   const faecher = [...new Set(alle.map(x => x.fach || 'Ohne Fach'))].sort((a, b) => {
     const ia = FACH_ORDER.indexOf(a), ib = FACH_ORDER.indexOf(b)
@@ -163,7 +161,7 @@ export function renderBibliothek(root, hooks) {
     const mehr = h('button', { class: 'bib-mehr', 'aria-label': 'Aktionen für «' + x.titel + '»', title: 'Aktionen', 'aria-expanded': 'false', onclick: () => { akt.hidden = !akt.hidden; mehr.classList.toggle('on', !akt.hidden); mehr.setAttribute('aria-expanded', String(!akt.hidden)) } }, '⋯')
     return h('div', { class: 'bib-row' + (pause ? ' pausiert' : '') },
       h('div', { class: 'bib-zeile' },
-        h('div', { class: 'bib-main', role: 'button', tabindex: '0', onclick:() => x.kind === 'lib' ? hooks.oeffneLib(x.id) : hooks.oeffneLink(x.id) },
+        h('div', { class: 'bib-main', role: 'button', tabindex: '0', onclick: () => hooks.oeffneLib(x.id) },
           h('div', { class: 'bib-t' }, x.s?.neu ? h('span', { class: 'neu-chip' }, 'NEU') : null, x.titel),
           h('div', { class: 'bib-meta' }, h('span', { class: 'tab ' + TYP_INFO[x.typ].css }, TYP_INFO[x.typ].tab), (x.s?.quelle && x.fach ? x.fach + ' · ' : '') + x.n + ' ' + x.einheit + (x.created && !x.s?.quelle ? ' · ' + datum(x.created) : '') + (x.s?.lp && lpAn ? (ungespeichert(x.s) ? ' · Änderung noch nicht bei der Klasse' : ' · veröffentlicht') : '') + (pause ? ' · nicht auf dem Start' : '')),
           x.beschaedigt ? h('div', { class: 'bib-defekt' }, (x.beschaedigt === 1 ? '1 Aufgabe ist' : x.beschaedigt + ' Aufgaben sind') + ' beschädigt und wird übersprungen. Unter «⋯» → «Bearbeiten» lässt sich das Set prüfen, oder du erstellst es neu.') : null),

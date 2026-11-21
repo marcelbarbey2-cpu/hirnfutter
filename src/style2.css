@@ -13,8 +13,8 @@
 .nv.screen, .nv .screen { flex: 1; }
 .nv button { font: inherit; color: inherit; border: 0; cursor: pointer; }
 .nv .serif { font-family: 'Bitter', Georgia, serif; }
-.nv h2 { margin: 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--text-3); }
-.nv .lbl { font-size: 11px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--text-3); }
+.nv h2 { margin: 0; font-size: 13px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); }
+.nv .lbl { font-size: 12px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--text-3); }
 .nv .mono, .nv .code { font-family: ui-monospace, Menlo, monospace; font-size: 13px; line-height: 1.5; }
 .nv .mono { color: var(--text-2); background: var(--surface-2); border-radius: 10px; padding: 12px; white-space: pre-wrap; word-break: break-word; max-height: 220px; overflow: auto; }
 
@@ -42,7 +42,7 @@
 .nv .stapel { box-shadow: 0 3px 0 -1px var(--surface), 0 4px 0 -1px var(--border), 0 7px 0 -2px var(--surface), 0 8px 0 -2px var(--border); margin-bottom: 8px; }
 .nv .set { cursor: pointer; }
 .nv .set .t { padding-bottom: 8px; border-bottom: 1px solid #96bbe3; margin-bottom: 10px; }
-.nv .tab { position: absolute; right: 12px; top: -11px; font-size: 11px; font-weight: 800; letter-spacing: .04em; padding: 3px 9px 4px; border-radius: 6px 6px 0 0; border: 1px solid transparent; border-bottom: none; }
+.nv .tab { position: absolute; right: 12px; top: -11px; font-size: 12px; font-weight: 800; letter-spacing: .04em; padding: 3px 9px 4px; border-radius: 6px 6px 0 0; border: 1px solid transparent; border-bottom: none; }
 .nv .tab.k { background: var(--amb-l); color: #814300; border-color: #f0c595; }
 .nv .tab.te { background: var(--blue-l); color: #00488a; border-color: #b6d1ee; }
 .nv .tab.tu { background: var(--vio-l); color: #4a2b83; border-color: #d3cbef; }
@@ -71,7 +71,7 @@
 .nv .crit input { width: 20px; height: 20px; }
 .nv .grade { display: flex; gap: 8px; }
 .nv .grade button { flex: 1; display: flex; flex-direction: column; align-items: center; gap: 3px; padding: 11px 4px; border-radius: 10px; font-size: 18px; font-weight: 800; }
-.nv .grade button span { font-size: 11px; font-weight: 700; letter-spacing: .03em; }
+.nv .grade button span { font-size: 12px; font-weight: 700; letter-spacing: .03em; }
 
 .nv .fb { display: flex; gap: 10px; align-items: flex-start; padding: 12px 14px; border-radius: 10px; font-size: 15px; font-weight: 600; line-height: 1.35; }
 .nv .fb b { font-weight: 800; }
@@ -83,11 +83,11 @@
 
 /* Navigation wie Ordnerreiter (auch auf der Übersicht, deshalb ohne .nv) */
 .reiter { position: sticky; bottom: 0; margin-top: auto; display: flex; gap: 6px; padding: 8px 14px 14px; background: var(--surface-2); border-top: 1px solid var(--border); }
-.reiter-knopf { flex: 1; text-align: center; padding: 11px 0; border-radius: 10px; font: inherit; font-weight: 700; font-size: 14px; color: var(--text-2); background: var(--surface); border: 1px solid var(--border); cursor: pointer; }
+.reiter-knopf { flex: 1; text-align: center; padding: 11px 0; border-radius: 10px; font: inherit; font-weight: 700; font-size: 15px; color: var(--text-2); background: var(--surface); border: 1px solid var(--border); cursor: pointer; }
 .reiter-knopf.on { background: var(--accent); color: var(--accent-text); border-color: transparent; font-weight: 800; }
 
 /* Typ-Marke in der Setliste */
-.typ-tab { display: inline-block; font-size: 10px; font-weight: 800; letter-spacing: .04em; padding: 1px 6px; border-radius: 5px; vertical-align: 2px; margin-right: 4px; }
+.typ-tab { display: inline-block; font-size: 12px; font-weight: 800; letter-spacing: .04em; padding: 1px 6px; border-radius: 5px; vertical-align: 2px; margin-right: 4px; }
 .typ-karten { background: #ffe6c8; color: #814300; }
 .typ-blatt, .typ-test { background: #d4ebff; color: #00488a; }
 .typ-tutor { background: #ede6ff; color: #4a2b83; }
@@ -161,7 +161,7 @@
 .kw-in:focus{outline:2px solid var(--accent,#d4842a);outline-offset:-2px;background:#fff6e8}
 .kw-l{display:flex;align-items:center;justify-content:center;height:100%;font-weight:700;visibility:hidden}
 .zeige-loes .kw-l{visibility:visible}
-.kw-hinw{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;font-size:14px}
+.kw-hinw{display:grid;grid-template-columns:1fr 1fr;gap:12px;margin-top:10px;font-size:15px}
 .kw-h{margin:2px 0}
 .kw-len{font-size:12px;color:#777}
 @media (max-width:520px){.kw-hinw{grid-template-columns:1fr}}
@@ -185,7 +185,7 @@
 .nv .bib-main{flex:1;padding:10px 14px;cursor:pointer;min-width:0}
 .nv .bib-t{font-weight:700;font-size:15px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 .nv .bib-meta{font-size:13px;font-weight:600;color:var(--text-2);margin-top:3px;display:flex;align-items:center;gap:8px}
-.nv .bib-meta .tab{position:static;margin:0;font-size:10px;padding:2px 7px;border-radius:6px;border-bottom:1px solid}
+.nv .bib-meta .tab{position:static;margin:0;font-size:12px;padding:2px 7px;border-radius:6px;border-bottom:1px solid}
 .nv .bib-mehr{width:44px;height:44px;border:0;background:none;font-size:22px;font-weight:800;color:var(--text-2)}
 .nv .bib-mehr.on{color:var(--accent-hover)}
 .nv .bib-akt{display:flex;flex-wrap:wrap;gap:14px;align-items:center;padding:4px 14px 12px;background:var(--surface-2)}
@@ -202,7 +202,7 @@
 .fehler-knopf{width:100%;display:flex;justify-content:space-between;align-items:center;text-align:left;gap:12px;padding:14px 16px;margin-bottom:14px;border:1px solid #ecdcbf;border-bottom-width:3px;border-radius:14px;background:#fbf3e4;color:inherit;font:inherit;font-size:15px;min-height:56px}
 .fehler-knopf small{font-size:13px;font-weight:600;opacity:.75}
 .fehler-pfeil{font-size:22px;font-weight:800}
-.kw-aktiv{position:sticky;top:0;z-index:2;background:#fff6e8;border:1px solid #e3c896;border-radius:8px;padding:6px 10px;font-size:14px;font-weight:700;margin-bottom:6px}
+.kw-aktiv{position:sticky;top:0;z-index:2;background:#fff6e8;border:1px solid #e3c896;border-radius:8px;padding:6px 10px;font-size:15px;font-weight:700;margin-bottom:6px}
 .nv .kk.ed{position:relative;padding-right:44px;display:flex;flex-direction:column;gap:6px}
 .nv .ed-f{font-size:15px;font-weight:600;line-height:1.35}
 .nv .ed-l{font-size:13px;font-weight:600;color:var(--green)}
@@ -239,7 +239,7 @@
 
 /* Start */
 .home-main { padding: 18px 16px 24px; }
-h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .1em; color: var(--text-2); }
+h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase; letter-spacing: .08em; color: var(--text-2); }
 .set-row { border-radius: 14px; padding-top: 14px; padding-bottom: 14px; } /* die Art zeigt das Etikett, kein farbiger Streifen */
 .set-row-name { font-family: 'Bitter', Georgia, serif; font-size: 18px; font-weight: 600; white-space: normal; }
 .alles-gut { margin: 14px 4px 0; padding: 12px 14px; border-radius: 12px; background: var(--green-light); color: #0c4714; font-weight: 700; font-size: 15px; }
@@ -247,11 +247,11 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 
 /* Set-Seite */
 .set-main { padding: 6px 20px 28px; max-width: 640px; width: 100%; margin: 0 auto; }
-.set-title { font-family: 'Bitter', Georgia, serif; font-size: 26px; font-weight: 600; line-height: 1.15; margin: 4px 0 4px; }
+.set-title { font-family: 'Bitter', Georgia, serif; font-size: 28px; font-weight: 600; line-height: 1.15; margin: 4px 0 4px; }
 .set-sub { font-size: 15px; font-weight: 600; color: var(--text-2); margin-bottom: 16px; }
 .set-karte { background: var(--surface); border: 1px solid var(--border); border-radius: 16px; box-shadow: var(--shadow-sm); padding: 18px 16px; display: flex; flex-direction: column; gap: 12px; }
 .set-stand { display: flex; align-items: center; gap: 14px; }
-.set-pct { font-family: 'Bitter', Georgia, serif; font-size: 40px; font-weight: 700; line-height: 1; }
+.set-pct { font-family: 'Bitter', Georgia, serif; font-size: 40px; font-weight: 600; line-height: 1; }
 .set-stand-text { font-size: 15px; font-weight: 600; color: var(--text-2); line-height: 1.3; }
 .set-stand-text b { color: var(--text); font-size: 16px; }
 .set-karte .box-bar { margin: 0 0 4px; height: 10px; border-radius: 99px; }
@@ -267,12 +267,12 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .study-header { background: none; border-bottom: 0; padding: 16px 20px 8px; }
 .study-deck-name { font-size: 15px; }
 .study-progress-text { font-size: 15px; font-weight: 800; color: var(--text-2); }
-.summary-hirn { width: 96px; height: 96px; }
+.summary-hirn { width: 72px; height: 72px; }
 .summary-title { font-family: 'Bitter', Georgia, serif; }
 .summary-actions { flex-direction: column; }
 .summary-actions .btn { width: 100%; }
 .btn-study-all:hover { background: var(--surface-2); color: var(--text); border-color: var(--border); }
-.card-text { font-size: 26px; line-height: 1.35; }
+.card-text { font-size: 28px; line-height: 1.35; }
 .card-face-label { font-size: 13px; }
 /* Blatt: Lösungsblatt nur im Druck und nur auf Wunsch */
 .nv .bl-loesblatt { display: none !important; }
@@ -296,7 +296,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 @media print{.zl-svg{max-width:9cm}}
 
 /* Klassencodes und Lehrermodus */
-.neu-chip{display:inline-block;background:var(--green);color:var(--surface);font-size:10px;font-weight:800;letter-spacing:.06em;border-radius:5px;padding:2px 5px;margin-right:6px;vertical-align:2px}
+.neu-chip{display:inline-block;background:var(--green);color:var(--surface);font-size:12px;font-weight:800;letter-spacing:.06em;border-radius:5px;padding:2px 5px;margin-right:6px;vertical-align:2px}
 .kc-hg{position:fixed;inset:0;z-index:50;background:rgba(30,25,20,.45);display:flex;align-items:flex-end;justify-content:center;padding:16px}
 @media (min-width:600px){.kc-hg{align-items:center}}
 .kc-box{background:var(--bg,#faf6f0);border-radius:18px;padding:20px;width:100%;max-width:420px;display:flex;flex-direction:column;gap:12px;box-shadow:0 10px 40px rgba(0,0,0,.25)}
@@ -305,7 +305,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .nv .bib-klassen-kopf{display:flex;justify-content:space-between;align-items:center;gap:10px}
 .nv .bib-klasse{display:flex;justify-content:space-between;align-items:center;gap:10px;border-top:1px solid var(--border);padding-top:10px}
 .nv .bib-klasse-lp{font-weight:600;color:var(--text-2)}
-.nv .bib-klasse-tag{font-size:10px;font-weight:800;letter-spacing:.08em;text-transform:uppercase;background:var(--blue-l,#e6f0fb);color:var(--blue,#1f6fbf);border-radius:6px;padding:2px 6px;margin-left:8px;vertical-align:2px}
+.nv .bib-klasse-tag{font-size:12px;font-weight:800;letter-spacing: .08em;text-transform:uppercase;background:var(--blue-l,#e6f0fb);color:var(--blue,#1f6fbf);border-radius:6px;padding:2px 6px;margin-left:8px;vertical-align:2px}
 .nv .lp-kopf{display:flex;justify-content:space-between;align-items:center;background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:12px 14px}
 .nv .lp-hinweis{font-size:15px;font-weight:600;color:var(--text-2);line-height:1.4}
 .nv .lp-klasse{background:var(--surface);border:1px solid var(--border);border-radius:14px;padding:14px;display:flex;flex-direction:column;gap:6px}
@@ -347,7 +347,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .nv .bib-ordner>div{background:var(--surface)}
 .nv .bib-ordner>div>.bib-row:first-child{border-top:1px solid var(--border)}
 .nv .bib-ordner .bib-main{padding-left:26px}
-.nv .bib-fach-lbl{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--text-2);padding:12px 14px 6px;border-top:1px solid var(--border)}
+.nv .bib-fach-lbl{font-size:12px;font-weight:800;letter-spacing: .08em;text-transform:uppercase;color:var(--text-2);padding:12px 14px 6px;border-top:1px solid var(--border)}
 .nv .bib-thema{height:36px;padding:0 8px;width:170px;font-size:15px}
 .nv .lp-fach{background:var(--surface);border:1px solid var(--border);border-radius:14px;overflow:hidden}
 .nv .lp-fach>summary{list-style:none;cursor:pointer;display:flex;align-items:center;gap:8px;padding:12px 14px;font-weight:800;font-size:15px;min-height:44px}
@@ -378,7 +378,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .pruef-vorbei-akt{display:flex;gap:8px;flex-wrap:wrap}
 .hilfe-card{max-height:86vh;overflow-y:auto}
 .hilfe-liste{list-style:none;margin:0 0 16px;padding:0;display:flex;flex-direction:column;gap:12px;font-size:15px;line-height:1.45}
-.hilfe-liste strong{font-size:15.5px}
+.hilfe-liste strong{font-size:15px}
 .ki-nach{display:flex;flex-direction:column;gap:8px;margin-top:8px;font-size:13px;font-weight:700;color:var(--text-2)}
 .ki-nach .ki-reihe{display:grid;grid-template-columns:repeat(3,1fr);gap:8px}
 .ki-nach a{height:44px;display:flex;align-items:center;justify-content:center;text-decoration:none;font-size:15px;font-weight:800;border:1px solid var(--border,#e2d8cf);border-radius:12px;background:var(--surface,#fff);color:inherit}
@@ -397,7 +397,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 /* Erstellen in Schritten */
 .top .schritt-zahl { margin-left: auto; font-size: 13px; font-weight: 700; color: var(--text-2); }
 .schritt-fertig { display: flex; gap: 10px; align-items: center; padding: 10px 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
-.schritt-haken { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--green-light); color: var(--green); font-weight: 900; font-size: 13px; }
+.schritt-haken { flex: none; width: 24px; height: 24px; border-radius: 50%; display: grid; place-items: center; background: var(--green-light); color: var(--green); font-weight: 800; font-size: 13px; }
 .schritt-titel { font-size: 13px; font-weight: 800; color: var(--text-2); }
 .schritt-text { font-size: 15px; font-weight: 600; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .entwurf-karte { display: flex; flex-wrap: wrap; gap: 10px; align-items: center; justify-content: space-between; padding: 12px 14px; border: 2px dashed var(--accent); border-radius: var(--radius-lg); background: var(--surface); }
@@ -408,7 +408,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .lp-anleitung { background: var(--surface); }
 .lp-schritte { display: flex; flex-direction: column; gap: 12px; padding-top: 10px; }
 .lp-schritt { display: flex; gap: 12px; align-items: flex-start; }
-.lp-schritt-nr { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-text); font-weight: 900; font-size: 15px; }
+.lp-schritt-nr { flex: none; width: 28px; height: 28px; border-radius: 50%; display: grid; place-items: center; background: var(--accent); color: var(--accent-text); font-weight: 800; font-size: 15px; }
 .lp-schritt-t { font-weight: 800; font-size: 15px; margin-bottom: 2px; }
 .lp-schritt .lnk { margin-top: 4px; padding-left: 0; }
 
@@ -416,7 +416,7 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .nv .seite.lp-login { width: 100%; max-width: 480px; margin: 0 auto; padding-top: 28px; padding-bottom: 32px; }
 .lp-login-karte { display: flex; flex-direction: column; align-items: stretch; gap: 12px; text-align: center; }
 .lp-login-hirn { align-self: center; }
-.lp-login-titel { font-size: 26px; font-weight: 800; color: var(--text); }
+.lp-login-titel { font-family: 'Bitter', Georgia, serif; font-size: 28px; font-weight: 600; color: var(--text); }
 .lp-login-text { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.45; color: var(--text-2); }
 .lp-login-in { height: 52px; font-size: 18px; text-align: center; letter-spacing: .08em; }
 .lp-login-klein { font-size: 13px; font-weight: 600; line-height: 1.4; color: var(--text-2); }
@@ -428,14 +428,14 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .btn .sym { margin: 0; }
 
 /* Reiter unten: Icon über dem Wort, so passen auch fünf Reiter auf ein Handy */
-.reiter-knopf { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 8px 2px 7px; min-width: 0; font-size: 12.5px; line-height: 1.15; }
+.reiter-knopf { display: flex; flex-direction: column; align-items: center; justify-content: center; gap: 3px; padding: 8px 2px 7px; min-width: 0; font-size: 12px; line-height: 1.15; }
 .reiter-knopf .sym { width: 22px; height: 22px; margin: 0; }
 .reiter-knopf span { max-width: 100%; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 /* Zwei Knöpfe nebeneinander (z. B. «Thema oder Text» / «Ich habe ein Foto»): umbrechen statt überlaufen */
 .nv .zwei > .btn { min-width: 0; white-space: normal; line-height: 1.15; padding: 0 10px; font-size: 15px; height: auto; min-height: 50px; }
 /* Fünf Reiter (Lehrpersonen): etwas enger, damit «Bibliothek» ganz Platz hat */
 .reiter.fuenf { gap: 4px; padding-left: 8px; padding-right: 8px; }
-.reiter.fuenf .reiter-knopf { font-size: 11.5px; letter-spacing: -0.01em; padding-left: 1px; padding-right: 1px; }
+.reiter.fuenf .reiter-knopf { font-size: 12px; letter-spacing: -0.01em; padding-left: 1px; padding-right: 1px; }
 
 /* Shop: gut sichtbarer Knopf direkt unter dem Hirn auf dem Start */
 .futter-links { flex: none; display: flex; flex-direction: column; align-items: stretch; gap: 6px; width: 76px; }
@@ -500,19 +500,6 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .nv .lp-vk-sets { flex-basis: 100%; margin-top: 4px; }
 .nv .lp-vsets { display: flex; flex-direction: column; gap: 8px; padding-top: 8px; }
 
-/* Erstellen mit Foto */
-.nv .foto-bereich { display: flex; flex-direction: column; gap: 10px; }
-.nv .foto-hinweis { font-size: 13px; font-weight: 600; color: var(--text-2); line-height: 1.4; }
-.nv .foto-vorschau { display: flex; gap: 12px; align-items: center; padding: 10px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface); }
-.nv .foto-vorschau img { width: 96px; height: 96px; object-fit: cover; border-radius: 8px; flex: none; background: var(--surface-2); }
-.nv .foto-vorschau.klein img { width: 64px; height: 64px; }
-.nv .foto-akt { display: flex; flex-direction: column; align-items: flex-start; gap: 6px; }
-
-/* Einstellung «KI-App auf diesem Handy» */
-.nv .kiapp-wahl { display: flex; gap: 12px; align-items: flex-start; padding: 12px; border: 1px solid var(--border); border-radius: var(--radius); background: var(--surface);
-  font-size: 13px; font-weight: 600; color: var(--text-2); line-height: 1.4; cursor: pointer; }
-.nv .kiapp-wahl b { color: var(--text); font-size: 15px; }
-.nv .kiapp-wahl input { width: 22px; height: 22px; margin-top: 1px; flex: none; accent-color: var(--accent-hover); }
 
 /* Vorlesen */
 .card-face, .card-tipp { position: relative; }
@@ -531,8 +518,8 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .rad-kicker { display: flex; align-items: center; justify-content: center; gap: 7px; font-size: 12px; line-height: 1.4; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #506747; }
 .rad-check { display: inline-flex; align-items: center; justify-content: center; width: 22px; height: 22px; background: #e8efdf; border-radius: 50%; }
 .rad-check svg { width: 18px; height: 18px; }
-.rad .rad-titel { margin: 8px 0 0; font-family: 'Bitter', Georgia, serif; font-size: 26px; line-height: 1.25; font-weight: 500; text-transform: none; letter-spacing: -.02em; color: #292014; }
-.rad-sub { font-size: 14px; line-height: 1.5; font-weight: 600; color: #62594f; margin-top: 8px; }
+.rad .rad-titel { margin: 8px 0 0; font-family: 'Bitter', Georgia, serif; font-size: 28px; line-height: 1.25; font-weight: 500; text-transform: none; letter-spacing: -.02em; color: #292014; }
+.rad-sub { font-size: 15px; line-height: 1.5; font-weight: 600; color: #62594f; margin-top: 8px; }
 .rad-buehne { position: relative; width: 264px; height: 264px; max-width: 100%; flex: none; margin-top: 2px; }
 .rad-buehne::after { content: ''; position: absolute; width: 64%; height: 15px; left: 18%; bottom: -5px; border-radius: 50%; background: rgba(96,65,25,.1); filter: blur(7px); z-index: 0; }
 .rad-dreh { position: relative; z-index: 1; overflow: hidden; border-radius: 50%; }
@@ -545,8 +532,8 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .rad-zeiger { position: absolute; top: -6px; left: 50%; width: 24px; height: 30px; transform: translateX(-50%); z-index: 3; }
 .rad-zeiger::before { content: ''; position: absolute; left: 0; top: 7px; border-left: 12px solid transparent; border-right: 12px solid transparent; border-top: 23px solid #473523; }
 .rad-zeiger::after { content: ''; position: absolute; width: 9px; height: 9px; border: 2px solid #fffdfa; background: #d99b42; border-radius: 50%; top: 2px; left: 7.5px; }
-.rad-nabe { position: absolute; z-index: 2; left: 50%; top: 50%; width: 70px; height: 70px; transform: translate(-50%,-50%); display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #fffdfa; border: 3px solid #c89955; box-shadow: 0 2px 5px rgba(65,44,15,.14); }
-.rad-nabe img { display: block; width: 56px; height: 48px; object-fit: contain; }
+.rad-nabe { position: absolute; z-index: 2; left: 50%; top: 50%; width: 78px; height: 78px; transform: translate(-50%,-50%); display: flex; align-items: center; justify-content: center; border-radius: 50%; background: #fffdfa; border: 3px solid #c89955; box-shadow: 0 2px 5px rgba(65,44,15,.14); }
+.rad-nabe .av-teil { height: auto; max-width: none; }
 .rad-legende { display: flex; justify-content: center; gap: 20px; font-size: 12px; font-weight: 700; color: #62594f; }
 .rad-legende>span { display: inline-flex; align-items: center; gap: 5px; }
 .rad-legende-icon { display: inline-flex; width: 18px; height: 18px; color: #9a6a2c; }
@@ -561,26 +548,26 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .rad-ergebnis { width: 100%; display: flex; align-items: center; justify-content: center; gap: 14px; padding: 16px; border: 1px solid #e3d3b8; border-radius: 16px; background: #faf2e3; text-align: left; }
 .rad-ergebnis:focus { outline: none; }
 .rad-gewinn-text { min-width: 0; }
-.rad .rad-gewinn-titel { font-family: 'Bitter', Georgia, serif; font-size: 24px; font-weight: 500; line-height: 1.25; color: #292014; overflow-wrap: anywhere; margin: 0; }
+.rad .rad-gewinn-titel { font-family: 'Bitter', Georgia, serif; font-size: 22px; font-weight: 500; line-height: 1.25; color: #292014; overflow-wrap: anywhere; margin: 0; }
 .rad-gewinn-sub { font-size: 13px; font-weight: 600; line-height: 1.45; color: #62594f; margin-top: 5px; }
 .rad-kruemel-icon { flex: none; display: inline-flex; align-items: center; justify-content: center; width: 48px; height: 48px; border-radius: 50%; background: #f5dfb5; color: #a36b20; }
 .rad-kruemel-icon svg { width: 30px; height: 30px; }
 .rad-ergebnis.rad-fund { --fund-farbe: #8553c7; display: grid; grid-template-columns: 82px minmax(0,1fr); align-items: center; gap: 12px; border-color: var(--fund-farbe); background: #fffcf7; }
 .rad-fund-vorschau { display: flex; align-items: center; justify-content: center; padding: 4px; width: 82px; height: 90px; border-radius: 12px; background: #f3ede4; }
 .rad-fund-bild { display: block; width: 100%; height: 100%; object-fit: contain; }
-.rad-fund .rad-gewinn-titel { font-size: 20px; margin-top: 6px; }
+.rad-fund .rad-gewinn-titel { font-size: 22px; margin-top: 6px; }
 .rad-ergebnis .s-rare.selten-marke { background: #2b65aa; }
 .rad-ergebnis .s-legendaer.selten-marke { background: #f5e6bd; color: #6d4a0e; }
 .rad-ergebnis .s-mythisch.selten-marke { background: #f4dfea; color: #713361; animation: none; }
-.rad-gewinn-label { font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #62594f; }
+.rad-gewinn-label { font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #62594f; }
 .rad-shop-knopf { grid-column: 1 / -1; min-height: 44px; display: flex; align-items: center; justify-content: center; gap: 6px; padding: 8px 12px; border-radius: 10px; border: 1px solid #d9cdbb; background: #fffdfa; color: #473523; font: 800 14px/1.4 'Nunito', system-ui, sans-serif; cursor: pointer; }
 .rad-shop-knopf:hover { background: #f3ede4; }
-@media (max-width: 360px) { .rad { padding: 22px 14px 18px; } .rad-buehne { width: 232px; height: 232px; } .rad .rad-titel { font-size: 23px; } }
+@media (max-width: 360px) { .rad { padding: 22px 14px 18px; } .rad-buehne { width: 232px; height: 232px; } .rad .rad-titel { font-size: 22px; } }
 @media (prefers-reduced-motion: no-preference) { .rad.fertig .rad-ergebnis { animation: rad-auftauchen .25s ease-out both; } }
 @keyframes rad-auftauchen { from { opacity: 0; transform: translateY(5px); } to { opacity: 1; transform: none; } }
 
 /* Seltenheit (Glücksrad-Teile): farbige Marke und Rahmen */
-.selten-marke { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 11px; font-weight: 800; letter-spacing: .06em; text-transform: uppercase; color: #fffdfa; vertical-align: 1px; }
+.selten-marke { display: inline-block; padding: 2px 8px; border-radius: 99px; font-size: 12px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: #fffdfa; vertical-align: 1px; }
 .s-rare.selten-marke { background: #3679c9; }
 .s-episch.selten-marke { background: #8553c7; }
 .s-legendaer.selten-marke { background: #c18a19; }
@@ -607,12 +594,12 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .rad:not(.eingebettet) .rad-titel { font-size: 22px; margin-top: 6px; }
 .rad:not(.eingebettet) .rad-buehne { width: 220px; height: 220px; }
 .rad-nabe { overflow: hidden; }
-.rad-nabe .avatar.rad-nabe-hirn { width: 62px; border-radius: 0; background: none !important; flex: none; }
+.rad-nabe .avatar.rad-nabe-hirn { width: 60px; border-radius: 0; background: none !important; flex: none; }
 
 /* Beschädigte Aufgaben in einem Set, Notfall-Anzeige */
 .bib-defekt { margin-top: 4px; font-size: 13px; font-weight: 600; line-height: 1.4; color: #8a4b1f; }
 .notfall h2 { font-family: 'Bitter', Georgia, serif; font-weight: 600; }
-.notfall .notfall-detail { font-size: 11px; color: #807971; max-width: 36ch; word-break: break-word; }
+.notfall .notfall-detail { font-size: 12px; color: #807971; max-width: 36ch; word-break: break-word; }
 
 /* Prüfungsfahrplan auf der Set-Seite */
 .plan { font-size: 15px; font-weight: 600; line-height: 1.45; color: #62594f; padding: 10px 12px; border-radius: 12px; background: #fbf3e4; border: 1px solid #ecdcbf; }
@@ -623,13 +610,13 @@ h2.abschnitt { margin: 18px 4px 8px; font-weight: 800; text-transform: uppercase
 .pl-leiste { display: flex; gap: 5px; margin-top: 10px; }
 .pl-tag { flex: 1 1 0; min-width: 0; display: flex; flex-direction: column; align-items: center; gap: 3px; }
 .pl-box { width: 100%; max-width: 34px; aspect-ratio: 1; height: auto; min-height: 14px; display: grid; place-items: center; border-radius: 6px;
-  border: 1.5px solid #dfd6cb; background: #fffdfa; font-size: 14px; font-weight: 800; line-height: 1; color: #fffdfa; }
+  border: 1.5px solid #dfd6cb; background: #fffdfa; font-size: 13px; font-weight: 800; line-height: 1; color: #fffdfa; }
 .pl-geuebt .pl-box, .pl-heute-fertig .pl-box { background: #d28425; border-color: #d28425; }
 .pl-aus .pl-box { background: #efe6db; border-color: #e3d8ca; }               /* ausgelassen: neutral, nicht rot */
 .pl-heute .pl-box { border: 2.5px solid #d28425; background: #fbf3e4; }
 .pl-heute-fertig .pl-box { box-shadow: 0 0 0 2px #fffdfa, 0 0 0 4px #d28425; }
 .pl-pruefung .pl-box { background: #fbe9c8; border: 2px solid #c18a19; font-size: 16px; }
-.pl-wt { font-size: 11px; font-weight: 700; color: #807971; white-space: nowrap; }
+.pl-wt { font-size: 12px; font-weight: 700; color: #807971; white-space: nowrap; }
 .pl-heute .pl-wt, .pl-heute-fertig .pl-wt { color: #be7100; }
 .pl-pruefung .pl-wt { color: #292014; }
 .pl-ausblick { margin-top: 8px; font-size: 13px; font-weight: 600; line-height: 1.4; color: #62594f; }
@@ -655,16 +642,16 @@ button:focus-visible, .btn:focus-visible, a:focus-visible, summary:focus-visible
 /* ── Audit: Fahrplan als Wochenkalender ── */
 .plan { background: #fbf3e4; border: 1px solid #ecdcbf; color: #62594f; }
 .plan-kopf { font-size: 16px; color: #292014; }
-.plan-sub { font-size: 14px; font-weight: 600; color: #62594f; margin-top: 2px; }
-.plan-ok { color: #38853e; font-weight: 900; }
+.plan-sub { font-size: 15px; font-weight: 600; color: #62594f; margin-top: 2px; }
+.plan-ok { color: #38853e; font-weight: 800; }
 .pl-kal { display: grid; grid-template-columns: repeat(7, minmax(0, 1fr)); gap: 6px; margin-top: 12px; max-width: 330px; }
 .pl-kal .pl-wt { font-size: 12px; font-weight: 700; color: #62594f; text-align: center; }
-.pl-zelle { aspect-ratio: 1; min-height: 32px; border-radius: 8px; display: grid; place-items: center; font-size: 14px; font-weight: 700;
+.pl-zelle { aspect-ratio: 1; min-height: 32px; border-radius: 8px; display: grid; place-items: center; font-size: 13px; font-weight: 700;
   border: 1.5px solid #c9bba8; background: #fffdfa; color: #62594f; font-variant-numeric: tabular-nums; }
 .pl-zelle.pl-leer { visibility: hidden; }
-.pl-zelle.pl-geuebt, .pl-zelle.pl-heute-fertig { background: #be7100; border-color: #be7100; color: #fffdfa; font-size: 16px; font-weight: 900; }
+.pl-zelle.pl-geuebt, .pl-zelle.pl-heute-fertig { background: #be7100; border-color: #be7100; color: #fffdfa; font-size: 16px; font-weight: 800; }
 .pl-zelle.pl-aus { background: #efe6db; border-style: dashed; color: #807971; }          /* ausgelassen: neutral, nicht rot */
-.pl-zelle.pl-heute { border: 2.5px solid #d28425; background: #fbf3e4; color: #292014; font-weight: 900; }
+.pl-zelle.pl-heute { border: 2.5px solid #d28425; background: #fbf3e4; color: #292014; font-weight: 800; }
 .pl-zelle.pl-heute-fertig { box-shadow: 0 0 0 2px #fbf3e4, 0 0 0 4px #d28425; }
 .pl-zelle.pl-pruefung { background: #fbe9c8; border: 2px solid #c18a19; color: #8a5a10; }
 .pl-zelle.pl-pruefung .sym { width: 62%; height: 62%; margin: 0; }
@@ -676,7 +663,7 @@ button:focus-visible, .btn:focus-visible, a:focus-visible, summary:focus-visible
 /* Prüfungsdatum bei laufendem Fahrplan: eine Zeile mit «Ändern» */
 .pruef-kompakt > summary { list-style: none; display: flex; justify-content: space-between; align-items: center; gap: 10px; min-height: 44px; cursor: pointer; font-size: 15px; }
 .pruef-kompakt > summary::-webkit-details-marker { display: none; }
-.pruef-kompakt .pruef-aendern { font-size: 14px; font-weight: 700; color: #be7100; text-decoration: underline; }
+.pruef-kompakt .pruef-aendern { font-size: 15px; font-weight: 700; color: #be7100; text-decoration: underline; }
 .pruef-kompakt[open] .pruef-aendern { visibility: hidden; }
 .pruef-kompakt .pruef-in { margin: 6px 0; }
 /* Audit-Nachtrag: «getragen» dunkler, Text-Knöpfe 44 px */
@@ -689,3 +676,100 @@ button:focus-visible, .btn:focus-visible, a:focus-visible, summary:focus-visible
 /* Fahrplan mittig, wie die Knöpfe darunter */
 .plan { text-align: center; }
 .pl-kal { margin-left: auto; margin-right: auto; }
+
+/* ── Erstellen: Weg zur KI und zurück ── */
+.nv .ki-andere { display: grid; grid-template-columns: repeat(auto-fit, minmax(0, 1fr)); gap: 8px; }
+.nv .ki-andere.ki-alle { grid-template-columns: 1fr; }
+.nv .bruecke { display: flex; flex-direction: column; align-items: stretch; gap: 10px; padding: 18px 16px; border: 1px solid #ecdcbf; border-radius: 16px; background: #fbf3e4; text-align: center; }
+.nv .rueckweg-bild { align-self: center; }
+.nv .bruecke-titel { font-family: 'Bitter', Georgia, serif; font-size: 22px; font-weight: 600; color: #292014; }
+.nv .bruecke-text { margin: 0; font-size: 15px; font-weight: 600; line-height: 1.5; color: #62594f; }
+.nv .kopier-zeichen { display: inline-grid; place-items: center; width: 28px; height: 28px; border: 1.5px solid #c9bba8; border-radius: 7px; background: #fffdfa; color: #292014; vertical-align: middle; margin: 0 2px; }
+.nv .kopier-zeichen .sym { margin: 0; width: 16px; height: 16px; }
+.nv .kopier-hinweis { display: flex; gap: 10px; align-items: center; font-size: 13px; font-weight: 600; line-height: 1.4; color: #62594f; }
+.nv .install-tipp { font-size: 13px; font-weight: 600; line-height: 1.4; color: #62594f; }
+.nv .install-tipp .lnk { display: inline-flex; min-height: 0; padding: 0; font-size: 13px; color: #be7100; text-decoration: underline; }
+.nv .gefunden { display: flex; flex-direction: column; gap: 8px; padding: 14px; border: 2px solid #d28425; border-radius: 14px; background: #fbf3e4; }
+.nv .gefunden-titel { display: flex; align-items: center; justify-content: center; gap: 8px; font-size: 18px; font-weight: 800; color: #292014; }
+.rad-grund { margin: 10px 0 2px; padding: 10px 12px; border-radius: 12px; background: #fbf3e4; border: 1px solid #ecdcbf; font-size: 15px; font-weight: 600; line-height: 1.45; color: #62594f; text-align: center; }
+
+/* Glücksrad nach dem Drehen: nur noch Titel und Gewinn */
+.rad.zu .rad-buehne, .rad.zu .rad-legende, .rad.zu .rad-sub { display: none; }
+
+/* Lehrermodus: Reiter und kompakte Klassenzeilen */
+.nv .lp-reiter { margin: 0; }
+.nv .lp-reiter .bl-seg { display: inline-flex; align-items: center; justify-content: center; gap: 6px; min-height: 44px; padding: 8px 6px; font-size: 15px; }
+.nv .lp-tab { display: flex; flex-direction: column; gap: 6px; }
+.nv .lp-gruppe { margin: 12px 0 2px; font-size: 13px; font-weight: 800; letter-spacing: .08em; text-transform: uppercase; color: var(--text-2); }
+.nv .lp-zeile { background: var(--surface); border: 1px solid var(--border); border-radius: 12px; }
+.nv .lp-zeile.archiv { opacity: .75; }
+.nv .lp-zeile > summary { list-style: none; cursor: pointer; display: flex; align-items: center; gap: 10px; min-height: 50px; padding: 6px 12px; }
+.nv .lp-zeile > summary::-webkit-details-marker { display: none; }
+.nv .lp-zeile > summary::after { content: '\203A'; flex: none; font-size: 22px; font-weight: 700; color: var(--text-3); transition: transform .15s; }
+.nv .lp-zeile[open] > summary::after { transform: rotate(90deg); }
+.nv .lp-zeile[open] { border-color: #e3c896; }
+.nv .lp-zeile-name { flex: none; min-width: 44px; font-family: 'Bitter', Georgia, serif; font-size: 18px; font-weight: 600; }
+.nv .lp-zeile-name small { font-family: 'Nunito', sans-serif; font-size: 12px; color: var(--text-2); }
+.nv .lp-zeile-meta { flex: 1; min-width: 0; font-size: 13px; font-weight: 700; color: var(--text-2); overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.nv .lp-zeile-neu { margin-left: 6px; padding: 2px 6px; border-radius: 6px; background: #fbf3e4; border: 1px solid #ecdcbf; color: #8a5a12; font-size: 12px; }
+.nv .lp-code.klein { font-size: 13px; padding: 4px 7px; border-radius: 8px; letter-spacing: .08em; }
+.nv .lp-zeile-body { display: flex; flex-direction: column; gap: 6px; padding: 10px 12px 12px; border-top: 1px solid var(--border); }
+.nv .lp-zeile-body.lp-akt { flex-direction: row; margin-top: 0; }
+.nv .lp-zeile-body .lp-akt { margin-top: 0; }
+@media (max-width: 420px) { .nv .lp-reiter .bl-seg svg { display: none; } .nv .lp-reiter .bl-seg { font-size: 13px; padding: 8px 2px; min-width: 0; } }
+/* Glücksrad auf dem Start: eine Zeile, die das Rad erst beim Antippen aufklappt */
+.rad-zeile { display: flex; align-items: center; gap: 12px; width: 100%; min-height: 56px; margin: 14px 0 4px; padding: 10px 14px; border: 1px solid #dfd6cb; border-radius: 16px; background: #fffdfa; text-align: left; font: inherit; color: #292014; cursor: pointer; }
+.rad-zeile:hover { background: #fdf6ea; }
+.rad-zeile:focus-visible { outline: 3px solid #8553c7; outline-offset: 3px; }
+.rad-zeile .rad-check { flex: none; color: #506747; }
+.rad-zeile-text { flex: 1; min-width: 0; display: flex; flex-direction: column; gap: 1px; }
+.rad-zeile-text b { font-size: 15px; font-weight: 800; }
+.rad-zeile-text small { font-size: 13px; font-weight: 600; color: #62594f; }
+.rad-zeile-icon { flex: none; display: inline-flex; width: 26px; height: 26px; color: #7857a2; }
+.rad-zeile-icon svg { width: 100%; height: 100%; }
+.rad-zeile-pfeil { flex: none; font-size: 22px; line-height: 1; color: #8a7c6b; }
+/* Hinweis «Startbildschirm» knapper, damit er die Sets nicht nach unten drückt */
+.home-screen .install-hint { margin-top: 12px; padding: 10px 14px; gap: 8px 12px; }
+.home-screen .install-hint-text { line-height: 1.4; }
+/* Set-Seite: für heute erledigt – eine Zeile statt eines grauen, toten Knopfs */
+.heute-erledigt { margin: 4px 0; padding: 12px 14px; border-radius: 12px; background: var(--green-light); color: #0c4714; font-size: 15px; font-weight: 700; text-align: center; }
+/* Tippflächen mindestens 44 px: Reiter Üben/Blatt und «Einstellungen» */
+.nv .bl-seg { min-height: 44px; }
+.set-mehr > summary { min-height: 44px; box-sizing: border-box; cursor: pointer; }
+/* Zusammenfassung: ein Satz, eine Zahlenzeile, eine kleine Fusszeile */
+.summary-satz { margin: 4px 0 0; font-size: 15px; line-height: 1.45; color: var(--text-2); max-width: 34ch; }
+.summary-fuss { margin: 0; font-size: 13px; line-height: 1.45; color: var(--text-3); max-width: 38ch; }
+.summary-plus { color: #8a5a12; font-weight: 800; }
+.summary-screen #rad-platz { width: 100%; }
+.summary-screen .rad-zeile { margin: 0; }
+.summary-actions .pause-knopf { align-self: center; }
+.summary-card { gap: 14px; }
+.summary-screen .summary-title { margin: 0; }
+.summary-hirn { margin-bottom: 0; }
+@media (max-width: 600px) { .summary-screen { padding: 16px 12px; } .summary-card { padding: 24px 18px; } }
+/* Erstellen, «Ich habe ein Foto»: Hinweis mit dem Linien-Icon der App statt eines Emojis */
+.nv .fb.foto-info { background: var(--surface-2); color: var(--text-2); }
+.nv .fb.foto-info .sym { flex: none; width: 22px; height: 22px; margin: 0; color: var(--text); }
+/* Zusammenfassung: drei gleich breite Spalten, damit die mittlere Zahl genau in der Mitte steht */
+.summary-stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; }
+.summary-stats .stat-item { min-width: 0; }
+.summary-stats .stat-lbl { text-align: center; line-height: 1.3; }
+/* «… (Auftrag kopieren)»: die Klammer als eigene zweite Zeile statt mitten im Satz umzubrechen */
+.btn.zwei-zeilen, .nv .btn.zwei-zeilen { white-space: pre-line; line-height: 1.25; height: auto; min-height: 50px; padding-top: 8px; padding-bottom: 8px; }
+/* Längere Texte im Blocksatz. Silbentrennung (lang="de") verhindert grosse Löcher in den schmalen Handyspalten.
+   Einzeilige Texte bleiben wie sie sind; in zentrierten Karten steht die letzte Zeile weiter mittig. */
+p, .fb > div, .install-hint-text, .rad-grund, .hilfe-liste li, .rad-zeile-text small {
+  text-align: justify; -webkit-hyphens: auto; hyphens: auto; hyphenate-limit-chars: 7 3 3; }
+.empty-state p, .summary-card p, .rad p, .nv .bruecke p, .rad-grund, .guide-card p { text-align-last: center; }
+/* Kurzer Satz unter «Portion geschafft!» bleibt zentriert: Bei nur zwei Zeilen reisst der Blocksatz Lücken. */
+.summary-card .summary-satz { text-align: center; }
+/* PROTOTYP «alles zentriert» beim Üben (nur Entwicklung, html.proto-zentriert) */
+.proto-zentriert .study-main .nv-in .kk { text-align: center; }
+.proto-zentriert .study-main .nv-in .kk .serif { text-align: center; text-align-last: center; }
+.proto-zentriert .study-main .nv-in .opt { text-align: center; }
+.proto-zentriert .study-main .nv-in .wline { justify-content: center; }
+.proto-zentriert .study-main .nv-in .fb { flex-direction: column; align-items: center; text-align: center; gap: 4px; }
+.proto-zentriert .study-main .nv-in .fb > div { text-align: center; text-align-last: center; }
+.proto-zentriert .study-main .nv-in .fb > span { font-size: 18px; line-height: 1; }
+/* Druck: Lücken im Lückentext als schwarze Linie. Die Bildschirmregel «.nv .inl» (orange) überstimmte sonst die Druckregel. */
+@media print { .nv .inl.bl-inl { border-bottom: 1px solid #000; background: none; } }

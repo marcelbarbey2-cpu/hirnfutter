@@ -17,8 +17,8 @@ export default defineConfig({
         lang: 'de',
         short_name: 'Hirnfutter',
         description: 'Karteikarten üben — Fach für Fach',
-        theme_color: '#c49a3a',
-        background_color: '#f7f3ee',
+        theme_color: '#fffdfa', // wie die Kopfzeile: Android färbt damit Status- und Navigationsleiste
+        background_color: '#faf4ec',
         display: 'standalone',
         orientation: 'portrait',
         scope: base,

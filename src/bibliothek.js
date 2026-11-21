@@ -1,6 +1,5 @@
-// Eigene Sets (mit der KI erstellt oder eingefügt). Karten-Sets aus Links bleiben
-// in `zk:sets`; hier liegt alles Neue: Karten, Testvorbereitung und Tutor-Lektionen.
-import { getSets, speicherVoll, zieheUm } from './storage.js'
+// Alle Sets: mit der KI erstellt, eingefügt, aus Links oder von der Klasse.
+import { getSets, vergissAlleLinks, speicherVoll, zieheUm } from './storage.js'
 import { itemKey, solText, frageText } from './format.js'
 
 const KEY_LIB = 'zk:lib'
@@ -16,7 +15,7 @@ export const getLibSet = id => load().find(s => s.id === id)
 
 /** Name eindeutig machen: der Fortschritt hängt am Namen. */
 function freierName(titel, ausser) {
-  const belegt = new Set([...load().filter(s => s.id !== ausser).map(s => s.titel), ...getSets().map(s => s.name)])
+  const belegt = new Set(load().filter(s => s.id !== ausser).map(s => s.titel))
   let n = titel || 'Neues Set', i = 2
   while (belegt.has(n)) n = `${titel} (${i++})`
   return n
@@ -41,6 +40,32 @@ export function updateLibSet(set, neuerTitel, { still = false } = {}) {
   save(list)
   if (set.titel !== alt) zieheUm(alt, set.titel)
   return set
+}
+/** Karten-Set aus einem alten Link (nur Vorder- und Rückseite) in die Bibliothek legen. Gibt es den Titel schon, wird es aufgefrischt. */
+export function linkSetSpeichern(titel, karten) {
+  const items = karten.filter(c => Array.isArray(c) && c[0] && c[1]).map(([v, hi]) => ({ t: 'karte', vorne: String(v), hinten: String(hi) }))
+  const da = load().find(s => s.titel === titel && s.typ === 'karten')
+  if (da) return updateLibSet({ ...da, items }, null, { still: true })
+  return saveLibSet({ id: neueId(), titel, fach: '', klasse: '7', created: Date.now(), typ: 'karten', items })
+}
+/**
+ * Früher lagen Sets aus Links getrennt in `zk:sets`. Einmalig in die Bibliothek übernehmen; der Titel bleibt gleich,
+ * darum bleibt auch der Fortschritt. Gibt es den Titel in der Bibliothek schon, gilt das Bibliotheks-Set.
+ */
+export function linkSetsUebernehmen() {
+  const alt = getSets()
+  if (!alt.length) return
+  const list = load(), titel = new Set(list.map(s => s.titel))
+  for (const e of alt) {
+    const name = String(e.name || '').trim()
+    if (!name || titel.has(name) || !Array.isArray(e.cards)) continue
+    const items = e.cards.filter(c => Array.isArray(c) && c[0] && c[1]).map(([v, hi]) => ({ t: 'karte', vorne: String(v), hinten: String(hi) }))
+    if (!items.length) continue
+    list.push({ id: neueId(), titel: name, fach: '', klasse: '7', created: Date.parse(e.openedAt) || Date.now(), geaendert: Date.now(), typ: 'karten', items })
+    titel.add(name)
+  }
+  try { localStorage.setItem(KEY_LIB, JSON.stringify(list.slice(0, MAX_LIB))) } catch { speicherVoll(); return } // nur löschen, was sicher übernommen ist
+  vergissAlleLinks()
 }
 export function deleteLibSet(id) { save(load().filter(s => s.id !== id)) }
 export const neueId = () => Math.random().toString(36).slice(2, 9) + Date.now().toString(36).slice(-3)

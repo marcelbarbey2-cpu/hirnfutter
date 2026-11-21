@@ -31,7 +31,6 @@ const KEY_SESSION  = (name, date) => `zk:s:${fnv(name)}:${date}`
 const KEY_SETS     = 'zk:sets'
 
 /** So viele zuletzt geöffnete Sets bleiben in der Liste. */
-const MAX_SETS = 40
 
 function load(key, fallback = null) {
   try {
@@ -53,16 +52,9 @@ export function getSets() {
   return Array.isArray(list) ? list : []
 }
 
-/** Set merken bzw. dessen Karten auffrischen. Neueste zuerst. */
-export function rememberSet(name, cards) {
-  const list = getSets().filter(s => s.name !== name)
-  list.unshift({ name, cards, openedAt: new Date().toISOString() })
-  save(KEY_SETS, list.slice(0, MAX_SETS))
-}
-
-/** Nur aus der Liste nehmen — der Fortschritt bleibt, der Link bringt ihn zurück. */
-export function forgetSet(name) {
-  save(KEY_SETS, getSets().filter(s => s.name !== name))
+/** Nach der Übernahme in die Bibliothek (linkSetsUebernehmen) ist die alte Liste leer. */
+export function vergissAlleLinks() {
+  try { localStorage.removeItem(KEY_SETS) } catch {}
 }
 
 // ── Fortschritt ──────────────────────────────────────────────────────────────

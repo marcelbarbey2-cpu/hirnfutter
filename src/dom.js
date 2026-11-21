@@ -62,11 +62,20 @@ export async function kopieren(text, btn) {
 }
 
 /** Die KIs, die Hirnfutter vorschlägt. Nur hier ändern (z. B. wegen Altersgrenzen der Anbieter). */
-export const KIS = [['ChatGPT', 'https://chatgpt.com/'], ['Claude', 'https://claude.ai/new'], ['Gemini', 'https://gemini.google.com/app']]
+export const KIS = [['ChatGPT', 'https://chatgpt.com/', 'com.openai.chatgpt'], ['Claude', 'https://claude.ai/new', 'com.anthropic.claude'], ['Gemini', 'https://gemini.google.com/app', 'com.google.android.apps.bard']]
+/**
+ * Adresse zum Öffnen einer KI. Android: «App, sonst Webseite» (Intent-Link mit Ersatzadresse).
+ * iPhone: ein gewöhnlicher Link; ist die App installiert, öffnet das iPhone sie meist selbst.
+ */
+export function kiAdresse([, url, paket]) {
+  if (!paket || !/android/i.test(navigator.userAgent || '')) return url
+  const u = new URL(url)
+  return 'intent://' + u.host + u.pathname + '#Intent;scheme=https;package=' + paket + ';S.browser_fallback_url=' + encodeURIComponent(url) + ';end'
+}
 /** Auftrag kopieren und gleich zeigen, wie es weitergeht: eine KI öffnen und dort einfügen. */
 export async function kopierenMitKi(text, btn) {
   await kopieren(text, btn)
   if (!btn || btn.nextElementSibling?.classList.contains('ki-nach')) return
   btn.after(h('div', { class: 'ki-nach' }, 'Kopiert. Öffne jetzt eine KI und füge den Auftrag dort ein:',
-    h('div', { class: 'ki-reihe' }, KIS.map(([n, u]) => h('a', { href: u, target: '_blank', rel: 'noopener' }, n + ' ↗')))))
+    h('div', { class: 'ki-reihe' }, KIS.map(k => h('a', { href: kiAdresse(k), target: '_blank', rel: 'noopener' }, k[0] + ' ↗')))))
 }

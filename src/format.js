@@ -370,7 +370,19 @@ function promptFehlerErklaerung(titel,proto,c){
 
 ${proto}
 
-Gehe jede Aufgabe einzeln durch. Erkläre in höchstens 4 einfachen Sätzen, warum die Antwort nicht stimmt und wie man auf die richtige Lösung kommt. Gib danach ein neues, ähnliches Beispiel zum Üben mit Lösung. Fasse am Schluss in 2 Sätzen zusammen, was der Schüler als Nächstes üben sollte. Schweizer Rechtschreibung (ss statt ß).`}
+Gehe jede Aufgabe einzeln durch. Erkläre in höchstens 4 einfachen Sätzen, warum die Antwort nicht stimmt und wie man auf die richtige Lösung kommt. Gib danach ein neues, ähnliches Beispiel zum Üben mit Lösung. Ausnahme: Steht als Antwort «Karteikarte» oder «Selbstkontrolle» (der Schüler hat es also nur nicht gewusst), gib dazu nur eine kurze Merkhilfe in einem Satz, ohne Erklärung und ohne Beispiel. Fasse am Schluss in 2 Sätzen zusammen, was der Schüler als Nächstes üben sollte. Schweizer Rechtschreibung (ss statt ß).`}
+/**
+ * Viele Fehler in Portionen: Bei 60 Fehlern bricht die Gratis-Version einer KI ab. Darum höchstens 10 pro Auftrag.
+ * Gibt den Knopftext für die nächste Portion zurück, ab = Index des ersten noch nicht erklärten Fehlers.
+ */
+const FEHLER_PORTION = 10
+function fehlerKnopfText(ab, n) {
+  if (n <= FEHLER_PORTION) return 'Alle Fehler erklären lassen\n(Auftrag kopieren)'
+  if (ab >= n) return 'Alle ' + n + ' Fehler erklärt · nochmals von vorne'
+  return 'Fehler ' + (ab + 1) + '–' + Math.min(ab + FEHLER_PORTION, n) + ' von ' + n + ' erklären lassen'
+}
+/** Protokoll-Zeilen für eine Portion; die Nummern laufen über alle Portionen weiter. */
+const fehlerPortion = (zeilen, ab) => zeilen.slice(ab, ab + FEHLER_PORTION).map((z, i) => (ab + i + 1) + '. ' + z).join('\n')
 /** Wie promptTest, aber mit dem Fehlerprotokoll als Material. */
 function promptFehlerset(proto,c){return promptTest({...c,thema:proto,blatt:true,fehler:true,anzahl:c.anzahl||'10'})}
 function promptErklaere(it,given,c){
@@ -394,4 +406,4 @@ function stichCheck(it,text){
   const da=ws.filter(hat),fehlt=ws.filter(w=>!hat(w));
   return {r:!t?'falsch':!fehlt.length?'richtig':da.length>=ws.length/2?'beinahe':'falsch',fehlt,da};
 }
-export { stichCheck }
+export { stichCheck, fehlerKnopfText, fehlerPortion, FEHLER_PORTION }

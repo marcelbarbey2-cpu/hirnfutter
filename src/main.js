@@ -11,7 +11,6 @@ import '@fontsource/bitter/latin-600.css'
 import '@fontsource/bitter/latin-400-italic.css'
 import './style.css'
 import {
-  getSets, rememberSet, forgetSet,
   getProgress, getCardState, setCardState, resetProgress,
   getSessionCount, bumpSessionCount,
   getSetSettings, saveSetSettings,
@@ -31,8 +30,8 @@ import { pruefeAntwort } from './antwort.js'
 import './style2.css'
 import { h, kopieren, kopierenMitKi, mathHtml, mathFuellen } from './dom.js'
 import { getFehler, istFehler, istPausiert, setzePause, setzePruefung, sicherungFaellig, sicherungSpaeter } from './storage.js'
-import { toItems, promptErklaere, promptFehlerErklaerung, frageText, solText } from './format.js'
-import { getLib, getLibSet, saveLibSet, deleteLibSet, libDeck, neueId } from './bibliothek.js'
+import { toItems, promptErklaere, promptFehlerErklaerung, fehlerKnopfText, fehlerPortion, FEHLER_PORTION, frageText, solText } from './format.js'
+import { getLib, getLibSet, saveLibSet, deleteLibSet, libDeck, neueId, linkSetSpeichern, linkSetsUebernehmen } from './bibliothek.js'
 import { gradeAus, bewerte } from './fortschritt.js'
 import { renderAufgabe } from './typen.js'
 import { renderWahl, renderErstellen, folgeVorbereiten, zuruecksetzen, TYP_INFO } from './erstellen.js'
@@ -41,7 +40,7 @@ import { renderSatz } from './blatt.js'
 import { alleAbgleichen, serverBereit, getLehrercode, anzeigeName } from './klassen.js'
 import { klassencodeDialog, renderLehrer } from './ansicht-klassen.js'
 import { sym } from './symbole.js'
-import { radEinbauen, heuteGedreht } from './rad.js'
+import { radEinbauen, radZeile, heuteGedreht } from './rad.js'
 import { fahrplan } from './fahrplan.js'
 import { kannVorlesen, vorlesen, spracheRaten, stopp as vorlesenStopp } from './vorlesen.js'
 import { updateLibSet } from './bibliothek.js'
@@ -246,8 +245,6 @@ const hooksBib = {
     if (s?.neu) { s.neu = false; updateLibSet(s, null, { still: true }) } // «NEU» verschwindet, sobald man das Set geöffnet hat
     if (s) navigate('set', { deck: libDeck(s) })
   },
-  oeffneLink: name => { const e = getSets().find(x => x.name === name); if (e) navigate('set', { deck: toDeck(e.name, e.cards) }) },
-  vergiss: name => { forgetSet(name); render() },
   linkOeffnen: hash => { location.hash = hash },
   lehrer: () => navigate('lehrer'),
 }
@@ -269,7 +266,7 @@ const hooksBlatt = {
 
 /** Alle Sets, die die App kennt: Link-Sets (Karten) und eigene. */
 function alleDecks() {
-  return [...getLib().map(libDeck), ...getSets().map(e => toDeck(e.name, e.cards))]
+  return getLib().map(libDeck)
 }
 
 
@@ -305,10 +302,10 @@ async function openFromHash() {
     }
     const deck = toDeck(String(raw.n || 'Ohne Titel'), raw.c || [])
     if (!deck.cards.length) { showToast('Das Set enthält keine vollständigen Karten.', 'error'); navigate('home'); return }
-    // Merken, damit die App auch ohne Link und ohne Netz brauchbar bleibt.
-    rememberSet(deck.name, deck.cards.map(c => [c.front, c.back]))
+    // In die Bibliothek, damit die App auch ohne Link und ohne Netz brauchbar bleibt.
+    const set = linkSetSpeichern(deck.name, deck.cards.map(c => [c.front, c.back]))
     requestPersistence()
-    navigate('set', { deck })
+    navigate('set', { deck: libDeck(set) })
   } catch (e) {
     console.warn('[Link] konnte nicht gelesen werden:', e)
     showToast('Dieser Link lässt sich nicht lesen.', 'error')
@@ -410,7 +407,6 @@ function pruefAbzeichen(deck, datum) {
 function renderHome() {
   const alle = [
     ...getLib().map(s => ({ deck: libDeck(s), typ: s.typ })),
-    ...getSets().map(e => ({ deck: toDeck(e.name, e.cards), typ: 'karten' })),
   ]
   const eintraege = alle.filter(e => !istPausiert(e.deck.name)) // «vom Start genommen» bleibt nur in der Bibliothek
   const nPause = alle.length - eintraege.length
@@ -509,12 +505,11 @@ function renderSetRow({ deck, typ }, pruefung) {
   const total    = deck.cards.length
   const { anteil: sicher, farbe } = sitztAnteil(deck, progress)
   const fertig     = istDurchgefuettert(deck, progress)
-  const lib = deck.kind === 'lib'
   const einheit = typ === 'karten' ? 'Karten' : 'Aufgaben'
   typ = typ === 'karten' ? 'karten' : 'test'
 
   return `
-    <div class="set-row zeile-${typ}" role="button" tabindex="0" aria-label="${escAttr(deck.name)} öffnen" data-action="${lib ? 'open-lib' : 'open-set'}" data-set-name="${escAttr(deck.name)}" data-lib-id="${escAttr(deck.libId || '')}">
+    <div class="set-row zeile-${typ}" role="button" tabindex="0" aria-label="${escAttr(deck.name)} öffnen" data-action="open-lib" data-set-name="${escAttr(deck.name)}" data-lib-id="${escAttr(deck.libId || '')}">
       <div class="set-row-main">
         <div class="set-row-name"><span class="typ-tab typ-${typ}">${TYP_TAB[typ] || ''}</span> ${deck.set?.neu ? '<span class="neu-chip">NEU</span>' : ''}${escHtml(deck.name)}</div>
         <div class="set-row-meta">
@@ -527,12 +522,10 @@ function renderSetRow({ deck, typ }, pruefung) {
       ${typeof pruefung === 'string' && pruefung
         ? `<span class="due-badge pruef-badge">${escHtml(pruefung)}</span>`
         : stats.dueCount > 0
-        ? `<span class="due-badge">${stats.dueCount} fällig</span>`
+        ? `<span class="due-badge">${stats.dueCount} dran</span>`
         : fertig
           ? `<span class="uptodate-badge" title="Alles in Stufe 5">durchgefüttert 🎉</span>`
           : `<span class="uptodate-badge">Erledigt ✓</span>`}
-      ${lib ? '' : `<button class="btn btn-ghost btn-delete" data-action="forget-set" data-set-name="${escAttr(deck.name)}"
-        title="Aus der Liste nehmen">✕</button>`}
     </div>
   `
 }
@@ -558,8 +551,6 @@ function renderSet() {
         <button class="kopf-x" data-action="home" aria-label="Zur Übersicht">←</button>
         <span class="kopf-t">Übersicht</span>
       </div>
-
-      ${installBanner()}
 
       <main class="set-main">
         <h1 class="set-title">${escHtml(deck.name)}</h1>
@@ -608,7 +599,7 @@ function renderSet() {
           </label>` : ''}
           <button class="btn btn-ghost btn-reset" data-action="reset">↺ Fortschritt zurücksetzen</button>
         </details>
-        <button class="pause-knopf" data-action="hilfe">Was bedeuten «Stufe», «fällig» und «sitzt»?</button>
+        <button class="pause-knopf" data-action="hilfe">Was bedeuten «Stufe», «dran» und «sitzt»?</button>
       </main>
     </div>
   `
@@ -620,7 +611,7 @@ function planHtml(deck, dueNow, nurKarten, einheit) {
   const anz = n => n + ' ' + (n === 1 ? eine : einheit)
   const normal = dueNow > 0
     ? `<button class="btn btn-study gross" data-action="study">${sym('ueben')}Jetzt üben · ${anz(dueNow)}</button>`
-    : `<button class="btn btn-study gross btn-disabled" disabled>Für heute alles gefüttert ✓</button>`
+    : `<p class="heute-erledigt">✓ Für heute erledigt.</p>`
   // Ist das Prüfungspensum erledigt, ist «Jetzt üben» nur noch ein Angebot: Nebenknopf statt Hauptknopf
   const freiwillig = dueNow > 0 ? `<button class="btn btn-study-all gross" data-action="study">${sym('ueben')}Mehr üben · ${anz(dueNow)}</button>` : ''
   const pl = fahrplan(deck)
@@ -690,7 +681,7 @@ function begleiterHtml(cardState, reaktion) {
       <div class="sprech${reaktion ? ' zeigt' : ''}" id="sprech" role="status">${reaktion ? escHtml(spruch(reaktion)) : ''}</div>
       <div class="box-indicator" title="Stufe ${cardState.box} von 5">
         ${[1, 2, 3, 4, 5].map(b => `<div class="box-dot ${b === cardState.box ? 'active' : b < cardState.box ? 'done' : ''}"></div>`).join('')}
-        <span class="box-label">Stufe ${cardState.box}</span>
+        <span class="box-label">Stufe ${cardState.box}/5</span>
       </div>
     </div>`
 }
@@ -815,7 +806,7 @@ function renderStudyAufgabe(raw) {
       h('div', null, h('b', null, ok ? 'Richtig.' : nea ? 'Beinahe.' : 'Falsch.'), !ok ? ' Richtig: ' + res.correct : '',
         raw.erklaerung ? h('div', { style: 'margin-top:4px;font-weight:600' }, raw.erklaerung) : null)))
     if (!ok) {
-      const eb = h('button', { class: 'btn ghost', style: 'height:42px;margin-top:8px', onclick: () => kopierenMitKi(promptErklaere(raw, res.given, { klasse: deck.klasse || '7', fach: deck.fach || '' }), eb) }, 'Erkläre mir das (Auftrag kopieren)')
+      const eb = h('button', { class: 'btn ghost zwei-zeilen', style: 'margin-top:8px', onclick: () => kopierenMitKi(promptErklaere(raw, res.given, { klasse: deck.klasse || '7', fach: deck.fach || '' }), eb) }, 'Erkläre mir das\n(Auftrag kopieren)')
       fb.append(eb)
     }
     fb.append(h('button', { class: 'btn', style: 'margin-top:8px', onclick: () => { state.letzteAntwort = res; gradeCard(gradeAus(res.r)) } }, 'Weiter'))
@@ -969,17 +960,37 @@ function radBereit() {
   if (decks.some(d => { const pl = fahrplan(d); return pl && pl.ziel > 0 && pl.erledigt >= pl.ziel })) return true // Prüfungsportion erledigt
   return decks.some(d => d.cards.length > 0 && d.cards.length < ROUND_SIZE && d.cards.every(c => getProgress(d.name)[c.id]?.lastReviewed === heute))
 }
+/** Was fehlt noch bis zum Glücksrad? Leer, wenn nichts Sinnvolles zu sagen ist. */
+function radGrund() {
+  const heute = today()
+  const decks = alleDecks().filter(d => !istPausiert(d.name))
+  const mitOffenen = decks.map(d => { const p = getProgress(d.name); return [d.name, getDueCards(d, p, Infinity).filter(c => p[c.id]?.lastReviewed).length] }).filter(([, n]) => n > 0)
+  if (mitOffenen.length) {
+    const [name, n] = mitOffenen[0]
+    return 'Noch ' + n + (n === 1 ? ' Wiederholung' : ' Wiederholungen') + ' in «' + name + '»' + (mitOffenen.length > 1 ? ' und in ' + (mitOffenen.length - 1) + (mitOffenen.length === 2 ? ' weiteren Set' : ' weiteren Sets') : '') + ', dann darfst du am Glücksrad drehen.'
+  }
+  const fehlen = ROUND_SIZE - (getTage()[heute] || 0)
+  if (fehlen > 0) return 'Noch ' + fehlen + (fehlen === 1 ? ' Karte' : ' Karten') + ' bis zu einer ganzen Portion, dann darfst du am Glücksrad drehen. Ein kleines Set ganz durchüben zählt auch.'
+  return ''
+}
 function radZeigen() {
   const platz = document.getElementById('rad-platz')
   if (!platz) return
-  if (!radBereit()) { platz.remove(); return }
+  if (!radBereit()) {
+    // Auf der Auswertung sagen, was bis zum Rad noch fehlt (macht die Regel durchschaubar, auch fürs Testen)
+    const grund = state.view === 'summary' && !heuteGedreht() ? radGrund() : ''
+    if (grund) { platz.className = 'rad-grund'; platz.textContent = grund } else platz.remove()
+    return
+  }
   // Auf dem Start sagt der Kopf des Rads schon «Für heute alles gefüttert»: die grüne Meldung nicht doppelt zeigen
   if (state.view === 'home') document.querySelectorAll('.home-main .alles-gut').forEach(e => { e.hidden = true })
-  radEinbauen(platz, () => {
+  const einbauen = () => radEinbauen(platz, () => {
     // Krümel-Anzeigen auf der Seite nachführen, ohne das Rad neu zu zeichnen
     const n = getKruemel().total.toLocaleString('de-CH')
     document.querySelectorAll('.futter-zahl').forEach(e => { e.textContent = n + ' Krümel' })
   }, { eingebettet: state.view === 'summary' })
+  // Auf dem Start und in der Zusammenfassung nur eine Zeile: Das Rad klappt erst beim Antippen auf.
+  radZeile(platz, einbauen)
 }
 
 /** Ist über alle gemerkten Sets nichts mehr fällig? Trägt die Serie an ruhigen Tagen. */
@@ -993,12 +1004,12 @@ function startStudy(all = false) {
   const progress = getProgress(deck.name)
   const queue = all === 'plan' ? (fahrplan(deck)?.queue || []) : all ? getAllCardsSorted(deck, progress) : getDueCards(deck, progress)
 
-  if (!queue.length) { showToast('Keine Karten fällig.', 'info'); return }
+  if (!queue.length) { showToast('Heute sind keine Karten dran.', 'info'); return }
   // Fälligkeit jetzt festhalten: Krümel gibt es nur für Karten, die dran waren.
   // Beim Bewerten wäre die Karte längst auf «heute» gesetzt und damit nie fällig.
   const faellig = new Set(getDueCards(deck, progress, Infinity).map(c => c.id))
   navigate('study', {
-    queue, queueIdx: 0, flipped: false, sessionGrades: [], sessionFehler: [],
+    queue, queueIdx: 0, flipped: false, sessionGrades: [], sessionFehler: [], erklaertAb: 0,
     faellig, ausbeute: 0, serieBonus: null,
   })
 }
@@ -1014,7 +1025,7 @@ function fehlerKarten() {
 function startFehler() {
   const queue = fehlerKarten().slice(0, 30)
   if (!queue.length) { showToast('Keine offenen Fehler.', 'info'); return }
-  navigate('study', { deck: { name: 'Meine Fehler', cards: queue, virtuell: true }, queue, queueIdx: 0, flipped: false, sessionGrades: [], sessionFehler: [], faellig: new Set(), ausbeute: 0, serieBonus: null })
+  navigate('study', { deck: { name: 'Meine Fehler', cards: queue, virtuell: true }, queue, queueIdx: 0, flipped: false, sessionGrades: [], sessionFehler: [], erklaertAb: 0, faellig: new Set(), ausbeute: 0, serieBonus: null })
 }
 
 const BEISPIEL = { titel: 'Beispiel: Schweiz-Quiz', fach: 'Geografie', items: [
@@ -1060,38 +1071,31 @@ function renderSummary() {
   root.innerHTML = `
     <div class="screen summary-screen">
       <div class="summary-card">
-        <img class="summary-hirn" src="${import.meta.env.BASE_URL}hirn.png" alt="" width="96" height="96" />
+        <img class="summary-hirn" src="${import.meta.env.BASE_URL}hirn.png" alt="" width="72" height="72" />
         <h1 class="summary-title">Portion geschafft!</h1>
-        <p>${message}</p>
-        <p>${deck.virtuell ? (again ? `${again} davon ${again === 1 ? 'bleibt' : 'bleiben'} auf deiner Fehlerliste.` : 'Alle Fehler ausgebügelt.') : stats.dueCount > 0 ? `Noch ${stats.dueCount} Karten in diesem Set fällig.` : 'Für heute alles gefüttert — in diesem Set.'}</p>
+        <p class="summary-satz">${message} ${deck.virtuell ? (again ? `${again} davon ${again === 1 ? 'bleibt' : 'bleiben'} auf deiner Fehlerliste.` : 'Alle Fehler ausgebügelt.') : stats.dueCount > 0 ? `Noch ${stats.dueCount} ${stats.dueCount === 1 ? 'Karte ist' : 'Karten sind'} heute dran.` : 'Für heute ist dieses Set erledigt.'}</p>
         <div class="summary-stats">
-          <div class="stat-item"><div class="stat-num">${total}</div><div class="stat-lbl">Gelernt</div></div>
+          <div class="stat-item"><div class="stat-num">${total}</div><div class="stat-lbl">Geübt</div></div>
           <div class="stat-item stat-green"><div class="stat-num">${good}</div><div class="stat-lbl">Gewusst</div></div>
-          <div class="stat-item stat-red"><div class="stat-num">${again}</div><div class="stat-lbl">Nicht gewusst</div></div>
+          <div class="stat-item"><div class="stat-num">${again}</div><div class="stat-lbl">Nicht gewusst</div></div>
         </div>
-        ${hard ? `<div class="summary-mastered">${hard} beinahe richtig</div>` : ''}
-        <div class="summary-pct">${pct}% gewusst</div>
-        <div class="summary-bar-wrap">
-          <div class="summary-bar"><div class="summary-bar-fill" style="width:${pct}%"></div></div>
-        </div>
-        ${state.ausbeute > 0
-          ? `<div class="summary-kruemel">+${state.ausbeute} Krümel</div>`
-          : `<div class="summary-kruemel summary-kruemel-leer">Keine neuen Krümel — die kommen, wenn die Karten wieder dran sind.</div>`}
-        <div id="rad-platz"></div>
+        <p class="summary-fuss">${hard ? `${hard} beinahe richtig. ` : ''}${state.ausbeute > 0
+          ? `<b class="summary-plus">+${state.ausbeute} Krümel.</b> `
+          : (good ? 'Beim zusätzlichen Üben gibt es keine Krümel. ' : 'Krümel gibt es für richtige Antworten. Morgen kommen die Karten wieder. ')}${deck.virtuell ? '' : masteredPct > 0
+          ? `${masteredPct} % des Sets sitzen sicher.`
+          : 'Noch sitzt keine Karte. Dafür musst du sie mehrmals richtig wissen, an verschiedenen Tagen.'}</p>
         ${state.serieBonus?.neueMarke
           ? `<div class="summary-serie">🔥 ${state.serieBonus.neueMarke} Tage in Folge — Bonus: +${state.serieBonus.bonus} Krümel</div>`
           : ''}
-        <div class="summary-mastered" ${deck.virtuell ? 'hidden' : ''}>${masteredPct > 0
-          ? `${masteredPct}% des Sets sitzt sicher`
-          : 'Noch nichts in Stufe 4 — das kommt, wenn die Karten wieder dran sind.'}</div>
+        <div id="rad-platz"></div>
         <div class="summary-actions">
-          ${state.sessionFehler.length ? `<button class="btn btn-study-all" data-action="fehler-erklaeren">Alle Fehler erklären lassen (Auftrag kopieren)</button>` : ''}
-          ${deck.virtuell ? `${fehlerKarten().length ? '<button class="btn btn-study" data-action="fehler">Fehler nochmals üben</button>' : ''}<button class="btn btn-primary" data-action="home">Zur Übersicht</button>` : `
+          ${state.sessionFehler.length ? `<button class="btn btn-study-all zwei-zeilen" data-action="fehler-erklaeren">${escHtml(fehlerKnopfText(state.erklaertAb || 0, state.sessionFehler.length))}</button>` : ''}
+          ${deck.virtuell ? `${fehlerKarten().length ? '<button class="btn btn-study-all" data-action="fehler">Fehler nochmals üben</button>' : ''}<button class="btn btn-primary" data-action="home">Zur Übersicht</button>` : `
           ${stats.dueCount > 0
-            ? `<button class="btn btn-study" data-action="study-more">Nachschlag nehmen (${Math.min(ROUND_SIZE, stats.dueCount)})</button>`
+            ? `<button class="btn btn-study-all" data-action="study-more">Noch ${Math.min(ROUND_SIZE, stats.dueCount)} üben</button>`
             : ''}
-          <button class="btn btn-study-all" data-action="study-all">Alles üben</button>
-          <button class="btn btn-primary" data-action="back-to-set">Zum Set</button>`}
+          <button class="btn btn-primary" data-action="back-to-set">Zurück</button>
+          <button class="pause-knopf" data-action="study-all">Alles durchgehen (${deck.cards.length})</button>`}
         </div>
       </div>
     </div>
@@ -1292,7 +1296,7 @@ function installBanner() {
   const zustand = installState()
   if (zustand === 'installiert' || zustand === 'unklar' || hintDismissed()) return ''
 
-  const grund = 'Dann bleiben deine Sets und dein Fortschritt erhalten — und du kannst auch ohne Internet üben.'
+  const grund = 'So bleiben deine Sets erhalten, auch ohne Internet.'
   const text = zustand === 'in-app'
     ? 'Du bist gerade in der Vorschau einer anderen App. Öffne diese Seite in <strong>Safari</strong> bzw. <strong>Chrome</strong> — nur dort lässt sie sich auf den Startbildschirm legen.'
     : zustand === 'menue'
@@ -1372,9 +1376,9 @@ function showHilfe() {
       <h2 class="guide-titel" id="hilfe-titel">So funktioniert Hirnfutter</h2>
       <ul class="hilfe-liste">
         ${punkt('Die fünf Stufen', 'Jede Karte und jede Aufgabe liegt auf einer Stufe. Neu beginnt alles auf Stufe 1. Weisst du die Antwort, steigt sie eine Stufe auf. Weisst du sie nicht, geht sie zurück auf Stufe 1.')}
-        ${punkt('Fällig', 'Je höher die Stufe, desto länger die Pause bis zum nächsten Mal. «Fällig» heisst: Heute ist diese Karte wieder dran. Ist nichts fällig, hast du für heute alles gemacht.')}
+        ${punkt('Dran', 'Je höher die Stufe, desto länger die Pause bis zum nächsten Mal. «Dran» heisst: Heute kommt diese Karte wieder. Ist nichts dran, hast du für heute alles gemacht.')}
         ${punkt('Sitzt', 'Eine Karte «sitzt», wenn sie auf Stufe 4 oder 5 liegt. Du hast sie also mehrmals richtig gewusst, mit Pausen dazwischen. Darum bringt es mehr, jeden Tag kurz zu üben als einmal lang.')}
-        ${punkt('Krümel', 'Krümel bekommst du, wenn eine fällige Karte eine Stufe aufsteigt. Im Shop tauschst du sie gegen Sachen für dein Hirn. Wer zusätzlich übt, lernt mehr, bekommt dafür aber keine Krümel.')}
+        ${punkt('Krümel', 'Krümel bekommst du, wenn eine Karte, die dran ist, eine Stufe aufsteigt. Im Shop tauschst du sie gegen Sachen für dein Hirn. Wer zusätzlich übt, lernt mehr, bekommt dafür aber keine Krümel.')}
         ${punkt('Glücksrad', 'Hast du heute eine Portion geübt (20 Karten oder ein kleines Set ganz) und alle Wiederholungen erledigt, darfst du einmal am Rad drehen. Neue Karten zählen nicht dazu. Gratis, und jedes Feld gewinnt: ein paar Krümel oder selten ein Fundstück für den Shop.')}
         ${punkt('Üben und Blatt', 'Bei «Üben» kommt eine Aufgabe nach der anderen. «Blatt» zeigt alle Aufgaben wie eine Prüfung: ausfüllen, auswerten, auf Wunsch drucken.')}
         ${punkt('Prüfung', 'Trag auf der Seite eines Sets das Datum der Prüfung ein. Dann steht das Set auf dem Start zuoberst. Nach der Prüfung nimmst du es vom Start.')}
@@ -1415,8 +1419,13 @@ document.addEventListener('click', e => {
   if (action === 'satz')          navigate('set', { satz: el.dataset.modus || 'blatt' })
   if (action === 'fehler')        startFehler()
   if (action === 'fehler-erklaeren') {
-    const proto = state.sessionFehler.map((f, i) => (i + 1) + '. Aufgabe: ' + f.frage + (f.quelle ? ' (aus «' + f.quelle + '»)' : '') + '\n   Seine Antwort: ' + f.gegeben + '\n   Richtig: ' + f.richtig).join('\n')
-    kopierenMitKi(promptFehlerErklaerung(state.deck.name, proto, { klasse: state.deck.klasse || '7', fach: state.deck.fach || '' }), el)
+    const zeilen = state.sessionFehler.map(f => 'Aufgabe: ' + f.frage + (f.quelle ? ' (aus «' + f.quelle + '»)' : '') + '\n   Seine Antwort: ' + f.gegeben + '\n   Richtig: ' + f.richtig)
+    const n = zeilen.length
+    let ab = state.erklaertAb || 0
+    if (ab >= n) ab = 0 // alle erklärt: von vorne
+    kopierenMitKi(promptFehlerErklaerung(state.deck.name, fehlerPortion(zeilen, ab), { klasse: state.deck.klasse || '7', fach: state.deck.fach || '' }), el)
+    state.erklaertAb = ab + FEHLER_PORTION
+    if (n > FEHLER_PORTION) setTimeout(() => { if (el.isConnected) el.textContent = fehlerKnopfText(state.erklaertAb, n) }, 1900) // nach «✓ Kopiert» die nächste Portion anbieten
   }
   if (action === 'klassencode' || action === 'ios-guide') fensterScharf()
   if (action === 'klassencode')   klassencodeDialog(r => { showToast('«' + anzeigeName(r.klasse.name) + '» hinzugefügt: ' + (r.ergebnis.neu + r.ergebnis.geaendert) + (r.ergebnis.neu + r.ergebnis.geaendert === 1 ? ' Set' : ' Sets'), 'success'); render() })
@@ -1447,17 +1456,6 @@ document.addEventListener('click', e => {
   if (action === 'close-hilfe')   document.getElementById('hilfe')?.remove()
   if (action === 'dismiss-hint')  { try { localStorage.setItem(KEY_INSTALL_HINT, 'weg') } catch {}; render() }
 
-  if (action === 'open-set') {
-    const entry = getSets().find(s => s.name === setName)
-    if (entry) navigate('set', { deck: toDeck(entry.name, entry.cards) })
-  }
-  if (action === 'forget-set') {
-    e.stopPropagation()
-    if (confirm(`«${setName}» aus der Liste nehmen? Der Fortschritt bleibt gespeichert — über den Link ist alles wieder da.`)) {
-      forgetSet(setName)
-      render()
-    }
-  }
 })
 
 document.addEventListener('change', e => {
@@ -1517,6 +1515,13 @@ function renderMarkdown(text) {
 let vollGemeldet = 0
 window.addEventListener('zk:voll', () => { if (Date.now() - vollGemeldet > 8000) { vollGemeldet = Date.now(); showToast('Speicher voll: Das konnte nicht gespeichert werden. Lösche alte Sets oder sichere deine Daten in der Bibliothek.', 'error') } })
 
+// PROTOTYP «alles zentriert» beim Üben: nur in der Entwicklung, mit ?zentriert ein- und ?links ausschalten.
+if (import.meta.env.DEV) {
+  if (/zentriert/.test(location.search)) sessionStorage.setItem('proto-zentriert', '1')
+  if (/links/.test(location.search)) sessionStorage.removeItem('proto-zentriert')
+  document.documentElement.classList.toggle('proto-zentriert', sessionStorage.getItem('proto-zentriert') === '1')
+}
+linkSetsUebernehmen()
 openFromHash()
 
 // Klassen im Hintergrund abgleichen: beim Start und wenn die App wieder sichtbar wird.

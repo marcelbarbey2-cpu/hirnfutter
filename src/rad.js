@@ -79,6 +79,19 @@ function zeichen(inhalt, klasse) {
 }
 
 /**
+ * Auf dem Start: nur eine Zeile statt des ganzen Rads, damit die Sets oben bleiben. Antippen klappt das Rad auf.
+ */
+export function radZeile(platz, aufklappen) {
+  const zeile = h('button', { class: 'rad-zeile', type: 'button', 'aria-label': 'Für heute alles gefüttert. Glücksrad öffnen' },
+    zeichen('<path d="m-8 0 5 5 11-11" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"/>', 'rad-check'),
+    h('span', { class: 'rad-zeile-text' }, h('b', null, 'Für heute alles gefüttert'), h('small', null, 'Jetzt am Glücksrad drehen')),
+    zeichen('<g transform="scale(.8)">' + geschenk + '</g>', 'rad-zeile-icon'),
+    h('span', { class: 'rad-zeile-pfeil', 'aria-hidden': 'true' }, '›'))
+  zeile.addEventListener('click', aufklappen)
+  platz.replaceChildren(zeile)
+}
+
+/**
  * Baut die Lernbelohnung ein. Der Gewinn wird weiterhin sofort und genau einmal gutgeschrieben.
  * `eingebettet`: auf der Auswertung, die schon «Portion geschafft!» sagt – dort ohne eigenen Rahmen und ohne zweite Überschrift.
  */
@@ -161,6 +174,8 @@ export function radEinbauen(platz, fertig, { eingebettet = false } = {}) {
       }
       ergebnis.hidden = false
       ergebnis.focus({ preventScroll: true })
+      // Kurz zeigen, wo das Rad stehen blieb, dann zusammenklappen: Die Sets darunter rücken wieder hoch.
+      if (!eingebettet) setTimeout(() => { if (karte.isConnected) karte.classList.add('zu') }, ruhig ? 800 : 1600)
       fertig?.(gewinn)
     }, ruhig ? 50 : 3300)
   })
